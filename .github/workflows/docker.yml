@@ -9,18 +9,21 @@ jobs:
     name: Build Image
     steps:
       - name: Checkout main repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'true'
 
       - name: Checkout sneezymud-docker repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: sneezymud/sneezymud-docker
           path: sneezymud-docker
+          sparse-checkout: |
+            docker/Dockerfile
+          sparse-checkout-cone-mode: false
 
-      - uses: mr-smithers-excellent/docker-build-push@v5
+      - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & Push Docker image
         with:
           image: drewhershey/sneezymud
