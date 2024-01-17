@@ -2,29 +2,99 @@ name: Validate PR
 on: pull_request
 
 jobs:
-  maybe_compile:
+  compile_and_run_game:
     runs-on: ubuntu-20.04
-    name: Ensure Successful Compilation
+    name: Compile and Run Game
     steps:
       - name: Checkout this commit
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Determine if the PR modifies any source files
-        uses: dorny/paths-filter@v2
-        id: filter
+      - name: Restore cached compilation results (part 1)
+        uses: actions/cache@v2
         with:
-          filters: |
-            source_files_modified:
-              - 'code/code/**.cc'
-              - 'code/code/**.h'
-              - 'code/code/**.cpp'
-              - 'code/code/**.hpp'
+          path: |
+            code/.sconsign.dblite
+            code/objs/cmd
+            code/objs/disc
+            code/objs/game
+            code/objs/misc
+          key: ${{ runner.os }}-scons-${{ hashFiles('code/code/**.cc', 'code/code/**.h') }}-part1
+          restore-keys: |
+            ${{ runner.os }}-scons-
 
-      - name: If yes, install dependencies and compile
-        if: steps.filter.outputs.source_files_modified == 'true'
+      - name: Restore cached compilation results (part 2)
+        uses: actions/cache@v2
+        with:
+          path: |
+            code/objs/obj
+            code/objs/spec
+            code/objs/sys
+            code/objs/task
+          key: ${{ runner.os }}-scons-${{ hashFiles('code/code/**.cc', 'code/code/**.h') }}-part2
+          restore-keys: |
+            ${{ runner.os }}-scons-
+
+      - name: Perform incremental compilation using cached results from previous workflow
         run: |
-          sudo apt-get update &&
-          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadbclient-dev scons libcurl4-openssl-dev &&
-          scons -C code -j`nproc` -Q pretty=0 debug=1 sanitize=1 olevel=2 sneezy
+          set -e
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadbclient-dev scons libcurl4-openssl-dev ccache ca-certificates mariadb-server
+          scons -j`nproc` -Q ccache=1 pretty=0 debug=1 sanitize=1 olevel=2 sneezy
+
+      - name: Cache new compilation results (part 1)
+        uses: actions/cache@v2
+        with:
+          path: |
+            code/.sconsign.dblite
+            code/objs/cmd
+            code/objs/disc
+            code/objs/game
+            code/objs/misc
+          key: ${{ runner.os }}-scons-${{ hashFiles('code/code/**.cc', 'code/code/**.h') }}-part1
+          restore-keys: |
+            ${{ runner.os }}-scons-
+
+      - name: Cache new compilation results (part 2)
+        uses: actions/cache@v2
+        with:
+          path: |
+            code/objs/obj
+            code/objs/spec
+            code/objs/sys
+            code/objs/task
+          key: ${{ runner.os }}-scons-${{ hashFiles('code/code/**.cc', 'code/code/**.h') }}-part2
+          restore-keys: |
+            ${{ runner.os }}-scons-
+
+      - name: Verify, configure, and seed a test database
+        run: |
+          set -e
+          sudo systemctl is-active --quiet mariadb || sudo systemctl start mariadb
+          sudo mariadb -e "create database sneezy; create database immortal;"
+          sudo mariadb -e "create user 'runner'@'localhost'; grant all on sneezy.* to 'runner'@'localhost'; grant all on immortal.* to 'runner'@'localhost';"
+          for db in immortal sneezy ; do
+            for phase in tables views data ; do
+              [ -d "_Setup-data/sql_$phase/$db" ] || continue
+              for sql in _Setup-data/sql_$phase/$db/*.sql ; do
+                echo "loading '$sql'"
+                mysql $db < $sql
+              done
+            done
+          done
+
+      - name: Verify the game boots up successfully
+        run: |
+          set -e
+          ./code/sneezy 2>&1 | tee output.log &
+          SNEEZY_PID=$!
+          while kill -0 $SNEEZY_PID ; do
+            if tail -n 100 output.log | grep -q "Entering game loop." ; then
+              echo "Sneezy started successfully"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Sneezy process crashed"
+          exit 1
