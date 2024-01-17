@@ -10,6 +10,7 @@
 #include "enum.h"
 #include "version.h"
 #include "discord.h"
+#include <curl/curl.h>
 
 #include <stdio.h>
 
@@ -30,9 +31,9 @@ int main(int argc, char* argv[]) {
   if (!Config::doConfiguration(argc, argv))
     return 0;
 
-  if (!Discord::doConfig()) 
+  if (!Discord::doConfig())
     vlogf(LOG_MISC, "Discord configuration failed.");
-  
+
   if (Config::NoSpecials())
     vlogf(LOG_MISC, "Suppressing assignment of special routines.");
 
@@ -51,6 +52,10 @@ int main(int argc, char* argv[]) {
   }
   vlogf(LOG_MISC, format("Using %s as data directory.") % Config::DataDir());
 
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  Discord::maybePostNewestCrashLog();
+
   srand(time(0));
   std::random_device rd;
   rng = std::mt19937(rd());
@@ -68,6 +73,7 @@ int main(int argc, char* argv[]) {
   int ret = run_the_game();
 
   generic_cleanup();
+  curl_global_cleanup();
 
   return ret;
 }
