@@ -2,16 +2,6 @@ name: Build and Test
 on: pull_request
 
 jobs:
-  always_pass:
-    # This job exists to make sure that this workflow will run and automatically pass
-    # when the 'build and test' job is skipped when the pull request doesn't change
-    # any code or the test.yml workflow itself. Without this, PRs will be blocked and
-    # unmergeable.
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Always pass
-        run: echo "Running Build and Test workflow."
-
   build_and_test:
     runs-on: ubuntu-20.04
     name: Build and Test
