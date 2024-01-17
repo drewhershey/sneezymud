@@ -4,7 +4,7 @@ on: pull_request
 jobs:
   compile_and_run_game:
     runs-on: ubuntu-20.04
-    name: Ensure that the game compiles and runs
+    name: Compile and Run Game
     steps:
       - name: Checkout this commit
         uses: actions/checkout@v4
@@ -16,6 +16,23 @@ jobs:
           set -e
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ccache ca-certificates mariadb-server
+
+      - name: Verify, configure, and seed a test database
+        run: |
+          set -e
+          sudo systemctl status mariadb.service
+          sudo systemctl is-active --quiet mariadb || sudo systemctl start mariadb
+          sudo mariadb -e "create database sneezy; create database immortal;"
+          sudo mariadb -e "create user 'runner'@'localhost'; grant all on sneezy.* to 'runner'@'localhost'; grant all on immortal.* to 'runner'@'localhost';"
+          for db in immortal sneezy ; do
+            for phase in tables views data ; do
+              [ -d "_Setup-data/sql_$phase/$db" ] || continue
+              for sql in _Setup-data/sql_$phase/$db/*.sql ; do
+                echo "loading '$sql'"
+                mysql $db < $sql
+              done
+            done
+          done
 
       - name: Restore cached compilation results (part 1)
         uses: actions/cache/restore@v4
@@ -68,23 +85,6 @@ jobs:
             code/objs/sys
             code/objs/task
           key: ${{ runner.os }}-scons-${{ hashFiles('code/code/**.cc', 'code/code/**.h') }}-part2
-
-      - name: Verify, configure, and seed a test database
-        run: |
-          set -e
-          sudo systemctl status mariadb.service
-          sudo systemctl is-active --quiet mariadb || sudo systemctl start mariadb
-          sudo mariadb -e "create database sneezy; create database immortal;"
-          sudo mariadb -e "create user 'runner'@'localhost'; grant all on sneezy.* to 'runner'@'localhost'; grant all on immortal.* to 'runner'@'localhost';"
-          for db in immortal sneezy ; do
-            for phase in tables views data ; do
-              [ -d "_Setup-data/sql_$phase/$db" ] || continue
-              for sql in _Setup-data/sql_$phase/$db/*.sql ; do
-                echo "loading '$sql'"
-                mysql $db < $sql
-              done
-            done
-          done
 
       - name: Verify the game boots up successfully
         run: |
