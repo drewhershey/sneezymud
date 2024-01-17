@@ -15,11 +15,12 @@ jobs:
         run: |
           set -e
           sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ccache ca-certificates mariadb-server
+          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ca-certificates mariadb-server
 
       - name: Verify, configure, and seed a test database
         run: |
           set -e
+          sudo cat /var/log/mysql/error.log
           sudo systemctl status mariadb.service
           sudo systemctl is-active --quiet mariadb || sudo systemctl start mariadb
           sudo mariadb -e "create database sneezy; create database immortal;"
