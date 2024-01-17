@@ -11,6 +11,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install dependencies
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ccache ca-certificates mariadb-server
+
       - name: Restore cached compilation results (part 1)
         uses: actions/cache@v2
         with:
@@ -36,12 +42,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-scons-
 
-      - name: Perform incremental compilation using cached results from previous workflow
+      - name: Compile code
         run: |
-          set -e
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadbclient-dev scons libcurl4-openssl-dev ccache ca-certificates mariadb-server
-          scons -j`nproc` -Q ccache=1 pretty=0 debug=1 sanitize=1 olevel=2 sneezy
+          scons -C code -j`nproc` -Q pretty=1 debug=1 sanitize=1 olevel=0 sneezy
 
       - name: Cache new compilation results (part 1)
         uses: actions/cache@v2
