@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-20.04
     name: Build and Test
     if: >-
-      contains(toJSON(github.event.pull_request.changed_files), 'code/code') ||
+      startsWith(toJSON(github.event.pull_request.changed_files), 'code/code') ||
       contains(toJSON(github.event.pull_request.changed_files), '.github/workflows/test.yml')
     steps:
       - name: Checkout this commit
