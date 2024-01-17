@@ -14,10 +14,12 @@ jobs:
       - name: Install dependencies
         run: |
           set -e
+          export DEBIAN_FRONTEND=noninteractive
           sudo apt-get update
           sudo apt-get remove --purge mysql-server mysql-client mysql-common
-          sudo rm -rf /var/lib/mysql
+          sudo rm -rf /var/lib/mysql          
           sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ca-certificates mariadb-server
+          sudo mysql_install_db --user=mysql --basedir=/usr --ldata=/var/lib/mysql
 
       - name: Verify, configure, and seed a test database
         run: |
