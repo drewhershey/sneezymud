@@ -3,7 +3,7 @@ on: pull_request
 
 jobs:
   compile_and_run_game:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Compile and Run Game
     steps:
       - name: Checkout this commit
@@ -14,12 +14,9 @@ jobs:
       - name: Install dependencies
         run: |
           set -e
-          export DEBIAN_FRONTEND=noninteractive
           sudo apt-get update
-          sudo apt-get remove --purge mysql-server mysql-client mysql-common
-          sudo rm -rf /var/lib/mysql          
-          sudo apt-get install --yes --no-install-recommends build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ca-certificates mariadb-server
-          sudo mysql_install_db --user=mysql --basedir=/usr --ldata=/var/lib/mysql
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get install --yes --no-install-recommends g++-9 build-essential libboost-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libboost-system-dev libmariadb-dev scons libcurl4-openssl-dev ca-certificates mariadb-server
 
       - name: Verify, configure, and seed a test database
         run: |
@@ -67,7 +64,7 @@ jobs:
 
       - name: Perform incremental compilation using cached results from previous workflow
         run: |
-          scons -C code -j`nproc` -Q pretty=1 debug=1 sanitize=1 olevel=0 sneezy
+          scons -C code -j`nproc` CXX=g++-9 pretty=1 debug=1 sanitize=1 olevel=0 sneezy
 
       - name: Cache new compilation results (part 1)
         uses: actions/cache/save@v4
