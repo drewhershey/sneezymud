@@ -58,6 +58,7 @@ bool Discord::doConfig() {
       format("Discord webhooks: ensure config is located in: '%s'") %
         std::filesystem::current_path());
     vlogf(LOG_MISC, "test");
+    vlogf(LOG_MISC, "test2");
     return false;
   }
 
