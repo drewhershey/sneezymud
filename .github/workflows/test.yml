@@ -39,7 +39,8 @@ jobs:
         with:
           path: |
             code/.sconsign.dblite
-            code/objs          
+            code/objs
+          key: ${{ runner.os }}-scons-${{ hashFiles('code/code/**.cc', 'code/code/**.h') }}
           restore-keys: |
             ${{ runner.os }}-scons-
 
