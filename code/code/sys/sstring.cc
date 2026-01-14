@@ -270,30 +270,30 @@ const sstring sstring::ansiToAard() const {
   return oBuf;
 }
 
-// puts commas every 3rd char, for formatting number strings
-const sstring sstring::comify() const {
-  sstring tString = *this;
-  unsigned int strCount, charIndex = 0;
-
-  tString = format("%.0f") % convertTo<float>(*this);
-  strCount = tString.length();
-  tString = "";
-
-  for (; charIndex < strCount; charIndex++) {
-    // put commas every 3rd char EXCEPT if next char is '-'
-    // that is, want "123456" to become "123,456"
-    // but don't want "-123" to become "-,123"
-    if (!((strCount - charIndex) % 3) && charIndex != 0 &&
-        !(charIndex == 1 && (*this)[0] == '-'))
-      tString += ",";
-
-    tString += (*this)[charIndex];
+// Formats numeric strings with comma separators every 3 digits.
+[[nodiscard]] sstring sstring::comify() const {
+  if (empty()) {
+    return *this;
   }
 
-  for (; charIndex != this->length(); charIndex++)
-    tString += (*this)[charIndex];
+  sstring result;
+  const bool negative = (*this)[0] == '-';
+  const size_t start = negative ? 1 : 0;
+  const size_t digitCount = length() - start;
 
-  return tString;
+  if (negative) {
+    result += '-';
+  }
+
+  for (size_t i = start; i < length(); ++i) {
+    const size_t posFromEnd = digitCount - (i - start);
+    if (i > start && posFromEnd % 3 == 0) {
+      result += ',';
+    }
+    result += (*this)[i];
+  }
+
+  return result;
 }
 
 // converts newlines in the string to CRLF if possible

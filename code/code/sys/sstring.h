@@ -43,7 +43,7 @@ class sstring : public std::string {
     sstring dropWord() const;
     sstring dropLastWord() const;
     sstring dropWords(size_t num) const;
-    const sstring comify() const;
+    [[nodiscard]] sstring comify() const;
     const sstring replaceString(sstring, sstring) const;
     const sstring trim() const;
     const sstring trimLeft() const;
