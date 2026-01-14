@@ -1,9 +1,11 @@
 #pragma once
 
 #include <boost/format.hpp>
+#include <cstddef>
 #include <format>
 #include <string>
 #include <string_view>
+#include <vector>
 
 extern boost::format format(const std::string&);
 
