@@ -436,6 +436,14 @@ sstring sstring::join(const std::vector<sstring>& words,
   return boost::algorithm::join(words, delimiter);
 }
 
+sstring singularOrPlural(long count, std::string_view singular,
+  std::string_view plural) {
+  if (count == 1) {
+    return singular;
+  }
+  return plural.empty() ? sstring{singular} + "s" : plural;
+}
+
 // splits the string up by whitespace and returns the i'th "word"
 const sstring sstring::word(int i) const {
   size_t copy_begin = 0, copy_end = 0;

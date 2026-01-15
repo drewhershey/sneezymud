@@ -17,35 +17,6 @@
 
 spellInfo* discArray[MAX_SKILL + 1];
 
-// Helper function to obtain the spellNumT for a given spellInfo object, as
-// spellInfo doesn't actually contain its relevant spellNumT for some reason.
-spellNumT spellInfo::getSpellNum() const {
-  const auto* begin = std::begin(discArray);
-  const auto* end = std::end(discArray);
-  for (const auto* it = begin; it != end; it = std::next(it)) {
-    if (strcmp(name, (*it)->name) != 0)
-      continue;
-
-    return static_cast<spellNumT>(std::distance(begin, it));
-  }
-  return spellNumT::MAX_SKILL;
-}
-
-// Safely search discArray for the spellInfo entry for the given skill number.
-// Return nullptr if no entry is found.
-spellInfo* getSpellInfo(spellNumT skillNum) {
-  auto* begin = std::begin(discArray);
-  auto* end = std::end(discArray);
-  for (auto* it = begin; it != end; it = std::next(it)) {
-    auto index = static_cast<spellNumT>(it - begin);
-    if (index != skillNum)
-      continue;
-
-    return *it;
-  }
-  return static_cast<spellInfo*>(nullptr);
-};
-
 spellInfo::spellInfo(skillUseClassT typ, discNumT disc, discNumT assDisc,
   statTypeT modifierStat, const char* name, taskDiffT task, lag_t lag,
   positionTypeT minPosition, manaCostT minMana, lifeforceCostT minLifeforce,
@@ -3782,7 +3753,7 @@ void buildSpellArray() {
 
   // Audit start and learn values
   for (spellNumT i = MIN_SPELL; i < MAX_SKILL; i++) {
-    const spellInfo* spell = getSpellInfo(i);
+    const spellInfo* spell = discArray[i];
     if (!spell || !spell->name)
       continue;
 

@@ -172,6 +172,8 @@ struct std::formatter<sstring> : std::formatter<std::string> {
 };
 
 extern bool isvowel(const char c);
+sstring singularOrPlural(long count, std::string_view singular,
+  std::string_view plural = {});
 
 // used for easily defining buffer sizes
 #ifndef cElements

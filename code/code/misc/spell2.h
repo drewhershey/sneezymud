@@ -481,8 +481,6 @@ class spellInfo {
       discStartDoT startLearnDo, discLearnDoT amtLearnDo,
       discStartDoT secStartLearnDo, discLearnDoT secAmtLearnDo, int learnDoDiff,
       float alignMod, uint32_t comp_types, uint32_t toggle);
-
-    spellNumT getSpellNum() const;
 };
 
 struct attack_hit_type {
@@ -507,4 +505,3 @@ struct PolyType {
 };
 
 extern spellInfo* discArray[MAX_SKILL + 1];
-extern spellInfo* getSpellInfo(spellNumT skillNum);
