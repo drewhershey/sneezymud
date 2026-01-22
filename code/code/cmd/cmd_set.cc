@@ -536,10 +536,6 @@ void TPerson::doSet(const char* argument) {
         amt *= 100;
         amt *= parm2;
         amt /= 10000;
-        if (discArray[snt]->startLearnDo > amt) {
-          amt = min((short)discArray[snt]->startLearnDo,
-            mob->getMaxSkillValue(snt));
-        }
         mob->setSkillValue(snt, max(amt, 1));
         mob->setNatSkillValue(snt, amt);
       }

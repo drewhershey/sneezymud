@@ -83,8 +83,6 @@
 #include "disc_commoner.h"
 #include "stats.h"
 
-#define DISC_DEBUG 0
-
 static bool enforceVerbal(TBeing* ch, spellNumT spell) {
   if (!IS_SET(discArray[spell]->comp_types, COMP_VERBAL))
     return TRUE;
@@ -539,7 +537,8 @@ bool bPassMageChecks(TBeing* caster, spellNumT spell, TThing* target) {
     TBeing* vict = dynamic_cast<TBeing*>(target);
     TObj* obj = dynamic_cast<TObj*>(target);
 
-    if (obj && !caster->useComponentObj(caster->findComponent(spell), obj, checkType))
+    if (obj &&
+        !caster->useComponentObj(caster->findComponent(spell), obj, checkType))
       return FALSE;
     // if target is not an object OR if target is NULL (area effects)
     if (!caster->useComponent(caster->findComponent(spell), vict, checkType))
@@ -578,7 +577,8 @@ bool bPassShamanChecks(TBeing* caster, spellNumT spell, TThing* target) {
     TBeing* vict = dynamic_cast<TBeing*>(target);
     TObj* obj = dynamic_cast<TObj*>(target);
 
-    if (obj && !caster->useComponentObj(caster->findComponent(spell), obj, checkType))
+    if (obj &&
+        !caster->useComponentObj(caster->findComponent(spell), obj, checkType))
       return FALSE;
     // if target is not an object OR if target is NULL (area effects)
     if (!caster->useComponent(caster->findComponent(spell), vict, checkType))
@@ -725,8 +725,6 @@ bool bPassClericChecks(TBeing* caster, spellNumT spell) {
 
   return TRUE;
 }
-
-int CDiscipline::getDoLearnedness() const { return (uDoLearnedness); }
 
 int CDiscipline::getNatLearnedness() const { return (uNatLearnedness); }
 
@@ -945,24 +943,16 @@ bool TBeing::isValidDiscClass(discNumT discNum, int classNum, int indNum) {
   return FALSE;
 }
 
-discNumT getDisciplineNumber(spellNumT spell_num, int class_num) {
+// Will crash if spell_num is invalid or discArray entry for spell_num is null
+discNumT getDisciplineNumber(spellNumT spell_num, int) {
   mud_assert(spell_num >= MIN_SPELL && spell_num < MAX_SKILL,
-    "Bad skill in getDisciplineNumber: %d", spell_num);
+    "Bad spellNumT passed to getDisciplineNumber: %d", spell_num);
 
-  if (!class_num) {
-    if (discArray[spell_num]) {
-      return discArray[spell_num]->disc;
-    } else {
-      return DISC_NONE;
-    }
-  } else {
-    return DISC_NONE;
-  }
-  return DISC_NONE;
-}
+  mud_assert(discArray[spell_num] != nullptr,
+    "No discArray entry for spellNumT %d passed to getDisciplineNumber",
+    spell_num);
 
-void CDiscipline::setDoLearnedness(int uNewValue) {
-  uDoLearnedness = uNewValue;
+  return discArray[spell_num]->disc;
 }
 
 void CDiscipline::setNatLearnedness(int uNewValue) {
@@ -1198,11 +1188,6 @@ static void logSkillFail(const TBeing* caster, spellNumT spell,
     return;
   }
 
-#if DISC_DEBUG
-  vlogf(LOG_BUG, format("%s Fail Spell %s (%d) ubComp < 0") %
-                   caster->getName() % discArray[spell]->name % spell);
-#endif
-
   if ((caster->GetMaxLevel() > MAX_MORT) && caster->desc) {
     discArray[spell]->immFail++;
     return;
@@ -1253,14 +1238,6 @@ static bool bSucCounter(TBeing* caster, skillUseClassT skillType,
         if (num <= boost) {
           // fail them some % of the time if fighting-adjust if nessessarry
           logSkillFail(caster, spell, FAIL_ENGAGE);
-#if DISC_DEBUG
-          if (caster->desc && caster->isPc()) {
-            vlogf(LOG_BUG, format("%s Fail Spell %s (%d) EngFail: boost (%d) "
-                                  "num (%d) , roll (%d) ubComp (%d)") %
-                             caster->getName() % discArray[spell]->name %
-                             spell % boost % num % roll % ubCompetence);
-          }
-#endif
           switch (getSpellType(discArray[spell]->typ)) {
             case SPELL_CASTER:
               caster->sendTo(COLOR_SPELLS,
@@ -1331,11 +1308,11 @@ static bool bSucCounter(TBeing* caster, skillUseClassT skillType,
   return FALSE;
 }
 
-bool TBeing::bSuccess(int ubCompetence, double dPiety, spellNumT spell) {
+bool TBeing::bSuccess(int, double, spellNumT spell) {
   // Is same as other formulas, with this correction being made
   // since factions' aren't in use, I'm simplifying and just making it
   // call the other function
-  return bSuccess(ubCompetence, spell);
+  return bSuccess(spell);
 
 #if FACTIONS_IN_USE
   // slight penalty based on low getPerc()
@@ -1355,45 +1332,13 @@ bool TBeing::bSuccess(int ubCompetence, double dPiety, spellNumT spell) {
 #endif
 }
 
-#if 0
-static void logLearnFail(TBeing *caster, spellNumT spell, int type)
-{
-  // this is used to log learn fail
-  // there is usually no need to call this directly as it sits inside i
-  // learnFromDoing and learnFromDoingUnusual
-
-  if (!caster) {
-    vlogf(LOG_BUG,format("Something went into logLearnFail with no caster (%d)") %  spell);
-    return;
-  }
-
-  if (caster->GetMaxLevel() > MAX_MORT) {
-    return;
-  }
-
-  if (!caster->desc) {
-    vlogf(LOG_BUG,format("Something went into logLearnFail with no desc (%d)") %  spell);
-    return;
-  }
-
-#if DISC_DEBUG
-  vlogf(LOG_BUG, format("%s Fail Spell %s (%d) ubComp < 0") %  caster->getName() % discArray[spell]->name % spell);
-#endif
-
-  if (type) {
-    ;
-  }
-  discArray[spell]->learnFail++;
-  return;
-}
-#endif
+// bSuccess now uses max learnedness for competence, so this function
+// is just a wrapper now, to avoid modifying all the calls.
+bool TBeing::bSuccess(int, spellNumT spell) { return bSuccess(spell); }
 
 bool TBeing::bSuccess(spellNumT spell) {
-  return bSuccess(getSkillValue(spell), spell);
-}
+  int maxLearnedness = getMaxSkillValue(spell);
 
-bool TBeing::bSuccess(int ubCompetence, spellNumT spell) {
-  // number of uses
   logSkillAttempts(this, spell, ATTEMPT_ADD_NORM);
 
   if (getQuaffUse()) {
@@ -1401,80 +1346,42 @@ bool TBeing::bSuccess(int ubCompetence, spellNumT spell) {
     return true;
   }
 
-  if (isImmortal() && desc && IS_SET(desc->autobits, AUTO_SUCCESS)) {
-    if (isPlayerAction(PLR_NOHASSLE))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   if (desc) {
-    // Do learning
-    if (getRawSkillValue(spell) >= 0) {
-      if (learnFromDoing(spell, SILENT_NO, 0)) {
-        ubCompetence++;
-      }
+    if (isImmortal() && IS_SET(desc->autobits, AUTO_SUCCESS)) {
+      return isPlayerAction(PLR_NOHASSLE);
+    }
+
+    if (getRawSkillValue(spell) >= 0 && learnFromDoing(spell)) {
+      maxLearnedness++;
     }
   }
 
-  // not learned at all
-  if (ubCompetence <= 0) {
-    logSkillFail(this, spell, FAIL_GENERAL);
-#if DISC_DEBUG
-    if (desc && isPc()) {
-      vlogf(LOG_BUG, format("%s Fail Spell %s (%d) ubComp < 0") % getName() %
-                       discArray[spell]->name % spell);
-    }
-#endif
-    return FALSE;
-  }
-
-  // force into range
-  ubCompetence = min(max(ubCompetence, 0), (int)MAX_SKILL_LEARNEDNESS);
-
-  // Here's the basis of this stuff:
-  // At max learning, we desire the following results:
-  // trivial    = 100%
-  // easy       = 90%
-  // normal     = 80%
-  // difficult  = 70%
-  // dangerous  = 60%
-  // for less than maxed learning, scale it up linearly
-  // Have focus factor in: high focus = 1.25 * above rates
-  // low focus = 0.80 * above rates
-
-  float limit = getSkillDiffModifier(spell);
-
-  // scale linearly based on learning
-  limit *= ubCompetence;
-  limit /= MAX_SKILL_LEARNEDNESS;
-
-  // factor in focus
-  limit *=
-    getStatMod(STAT_FOC);  // does the same thing, just uses standard formula
-
-  // Adding in Karma (luck) as a smaller component than focus
-  limit *= plotStat(STAT_CURRENT, STAT_KAR, 0.9, 1.125, 1.0);
-
-  // make other adjustments here
-  // possibly have some for things like position, etc
-
-  int iLimit = (int)limit;
-  int roll = ::number(0, 99);
-  skillUseClassT skillType = discArray[spell]->typ;
-
-  if (roll < iLimit) {
-    // success
-    return bSucCounter(this, skillType, spell, roll, ubCompetence);
-  } else {
-    // fail
+  if (maxLearnedness <= 0) {
     logSkillFail(this, spell, FAIL_GENERAL);
     return false;
   }
-}
 
-byte defaultProficiency(byte uLearned, byte uStart, byte uLearn) {
-  return ((uLearned - uStart) * uLearn);
+  maxLearnedness = std::clamp(maxLearnedness, 0, int{MAX_SKILL_LEARNEDNESS});
+
+  // Scale by skill difficulty and max learnedness
+  double chance =
+    getSkillDiffModifier(spell) * maxLearnedness / MAX_SKILL_LEARNEDNESS;
+
+  // Focus modifies by standard -20% to +25% stat mod
+  chance *= getStatMod(STAT_FOC);
+
+  // Karma has a lower effect - half the standard stat mod
+  chance *= plotStat(STAT_CURRENT, STAT_KAR, 0.9, 1.125, 1.0);
+
+  const int roll = ::number(0, 99);
+
+  if (roll < static_cast<int>(chance)) {
+    return bSucCounter(this, discArray[spell]->typ, spell, roll,
+      maxLearnedness);
+  }
+
+  logSkillFail(this, spell, FAIL_GENERAL);
+  return false;
 }
 
 // CritSuccess for spells only
@@ -2166,7 +2073,7 @@ void TBeing::assignDisciplinesClass() {
 }
 
 void TBeing::initSkillsBasedOnDiscLearning(discNumT disc_num) {
-  int disc_learn = 0, boost = 0, max_amt = 0, value = 0;
+  int disc_learn = 0;
   CDiscipline* cd;
 
   mud_assert(discs != NULL,
@@ -2174,7 +2081,7 @@ void TBeing::initSkillsBasedOnDiscLearning(discNumT disc_num) {
     "%s",
     getName().c_str());
 
-  // mob skills are always maxed for their disc-training
+  // NPC skill success uses getMaxSkillValue() (discipline-based)
   if (!(cd = getDiscipline(disc_num))) {}
   disc_learn = cd->getLearnedness();
 
@@ -2193,37 +2100,11 @@ void TBeing::initSkillsBasedOnDiscLearning(discNumT disc_num) {
         setNatSkillValue(i, getMaxSkillValue(i));
         setSkillValue(i, getMaxSkillValue(i));
       } else {
-        max_amt = (disc_learn - discArray[i]->start + 1) * discArray[i]->learn;
-        max_amt = max(max_amt, 1);
-        max_amt = min(max_amt, (int)MAX_SKILL_LEARNEDNESS);
-        if (discArray[i]->startLearnDo >= 0) {
-          boost = min(max_amt, (int)discArray[i]->startLearnDo);
-          if ((5 * discArray[i]->learn) >= MAX_SKILL_LEARNEDNESS) {
-            value = 50 + ((disc_learn - discArray[i]->start) * 2);
-            value = min(value, 100);
-            value = value * max_amt;
-            value /= 100;
-            value = min((int)MAX_SKILL_LEARNEDNESS, value);
-            value = max(value, 10);
-            value = max(boost, value);
-          } else {
-            if (disc_learn <= MAX_DISC_LEARNEDNESS) {
-              value = 75 + (disc_learn - discArray[i]->start);
-              value = min(value, 100);
-              value = value * max_amt;
-              value /= 100;
-              value = min((int)MAX_SKILL_LEARNEDNESS, value);
-              value = max(value, 10);
-              value = max(boost, value);
-            } else {
-              value = max_amt;
-            }
-          }
-        } else {
-          value = max_amt;
-        }
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
+        // NPC effectiveness starts at minimum, like new PCs
+        // Skill success is based on getMaxSkillValue() (discipline), not this
+        // value
+        setNatSkillValue(i, 1);
+        setSkillValue(i, 1);
         if (i == SKILL_TACTICS) {
           setNatSkillValue(SKILL_TACTICS, min(100, (GetMaxLevel() * 12)));
           setSkillValue(SKILL_TACTICS, min(100, (GetMaxLevel() * 12)));
@@ -2379,8 +2260,6 @@ int TBeing::isNotPowerful(TBeing* vict, int lev, spellNumT skill,
     if (assDisc) {
       advLearning = getAdvLearning(skill);
       bonus += advLearning;
-      //      advLearning = getAdvDoLearning(skill);
-      //      bonus += (level * advLearning) / 200;
     }
   }
 
@@ -2541,47 +2420,54 @@ int TBeing::getSkillLevel(spellNumT skill) const {
   return lev;
 }
 
-short TBeing::getMaxSkillValue(spellNumT skill) const {
-  int tmp2;
-  discNumT dn = getDisciplineNumber(skill, FALSE);
-  if (dn == DISC_NONE) {
-    vlogf(LOG_BUG, format("bad disc for skill %d") % skill);
+short TBeing::getMaxSkillValue(spellNumT skillNum) const {
+  const auto& disc = *getDiscipline(skillNum);
+  const auto& info = *discArray[skillNum];
+
+  // Discipline investment above skill's start threshold determines potential
+  const int discProgress = disc.getLearnedness() - info.start + 1;
+  if (discProgress <= 0) {
     return SKILL_MIN;
   }
-  CDiscipline* cdisc = getDiscipline(dn);
 
-  if (cdisc && discArray[skill] && *discArray[skill]->name) {
-    tmp2 = max(0, cdisc->getLearnedness() - discArray[skill]->start + 1);
+  // Toggle-locked skills require quest completion for access
+  if (info.toggle) {
+    // Players need the quest bit (unless immortal)
+    if (desc && !isImmortal() && !hasQuestBit(info.toggle)) {
+      return SKILL_MIN;
+    }
 
-    if (((!desc || isImmortal()) || (!discArray[skill]->toggle ||
-                                      hasQuestBit(discArray[skill]->toggle))) &&
-        tmp2 > 0) {
-      if (!desc && discArray[skill]->toggle &&
-          (master && master->desc && !master->isImmortal())) {
-        return SKILL_MIN;
-      } else {
-        return min((discArray[skill]->learn * tmp2),
-          (int)MAX_SKILL_LEARNEDNESS);
-      }
+    // Charmed NPCs can't inherit toggle skills from mortal PC masters
+    if (!desc && master && master->desc && !master->isImmortal()) {
+      return SKILL_MIN;
     }
   }
-  return SKILL_MIN;
+
+  // Potential scales with discipline progress: learn_rate × progress, capped at
+  // 100
+  return std::min(info.learn * discProgress, int{MAX_SKILL_LEARNEDNESS});
 }
 
+/* Returned pointer is guaranteed to be non-null and valid */
 CDiscipline* TBeing::getDiscipline(discNumT n) const {
-  if (n < 0 || n > MAX_DISCS) {
-    vlogf(LOG_BUG, format("getDiscipline called out of range: n=%i") % n);
-    return NULL;
-  }
+  mud_assert(n >= 0 && n < MAX_DISCS,
+    "getDiscipline called with out of range disc num %d for being %s", n,
+    getName().c_str());
 
-  if (discs) {
-    return discs->disc[n];
-  } else {
-    mud_assert(0, "TBeing had no CMasterDiscipline. '%s'",
-      !getName().empty() ? getName().c_str() : "NoName");
+  mud_assert(discs != nullptr,
+    "getDiscipline called on TBeing '%s' with no CMasterDiscipline.",
+    getName().c_str());
 
-    return NULL;
-  }
+  mud_assert(discs->disc[n] != nullptr,
+    "getDiscipline called on TBeing '%s' for unassigned discipline %d.",
+    getName().c_str(), n);
+
+  return discs->disc[n];
+}
+
+/* Returned pointer is guaranteed to be non-null and valid */
+CDiscipline* TBeing::getDiscipline(spellNumT skill) const {
+  return getDiscipline(getDisciplineNumber(skill));
 }
 
 void CS(const TBeing* caster, spellNumT spell) {
@@ -2675,75 +2561,6 @@ void LogDam(const TBeing* caster, spellNumT spell_num, int dam) {
   }
 }
 
-#if 0
-enum logLearnAttemptT {
-  LEARN_ATT_ADD,
-  LEARN_ATT_REM
-};
-
-static void logLearnAttempts(TBeing *caster, spellNumT spell, logLearnAttemptT type, int)
-{
-  if ((caster->GetMaxLevel() > MAX_MORT) || !caster->isPc() || !caster->desc)
-    return;
-
-  switch (type) {
-    case LEARN_ATT_ADD:
-      discArray[spell]->learnAttempts++;
-      discArray[spell]->learnLearn += caster->getSkillValue(spell);
-      discArray[spell]->learnLevel += caster->GetMaxLevel();
-      break;
-    case LEARN_ATT_REM:
-      discArray[spell]->learnAttempts -= 1;
-      discArray[spell]->learnLearn -= caster->getSkillValue(spell);
-      discArray[spell]->learnLevel += caster->GetMaxLevel();
-      break;
-  }
-
- return;
-}
-
-enum logLearnSuccessT {
-  LEARN_SUC_NORM,
-  LEARN_SUC_DISC,
-  LEARN_SUC_ADV
-};
-
-static void logLearnSuccess(TBeing *caster, spellNumT spell, logLearnSuccessT type, int boost)
-{
-  // this is used to log learn success
-  // there is usually no need to call this directly as it sits inside i
-  // learnFromDoing and learnFromDoingUnusual
-
-  if (!caster) {
-    vlogf(LOG_BUG,format("Something went into logLearnSuccess with no caster (%d)") %  spell);
-    return;
-  }
-
-  if (caster->GetMaxLevel() > MAX_MORT) {
-    return;
-  }
-
-  if (!caster->desc) {
-    vlogf(LOG_BUG,format("Something went into logLearnSuccess with no desc (%d)") %  spell);
-    return;
-  }
-
-  switch (type) {
-    case LEARN_SUC_NORM:
-      discArray[spell]->learnSuccess++;
-      discArray[spell]->learnBoost += boost;
-      break;
-    case LEARN_SUC_DISC:
-      discArray[spell]->learnDiscSuccess++;
-      break;
-    case LEARN_SUC_ADV:
-      discArray[spell]->learnAdvDiscSuccess++;
-      break;
-  }
-  return;
-}
-#endif
-
 int TMonster::learnFromDoingUnusual(learnUnusualTypeT, spellNumT, int) {
   return FALSE;
 }
@@ -2794,17 +2611,16 @@ int TPerson::learnFromDoingUnusual(learnUnusualTypeT type, spellNumT spell,
         return FALSE;
       } else if (0 && spell == SKILL_BAREHAND_PROF) {
         if (doesKnowSkill(spell))
-          return learnFromDoing(spell, SILENT_NO, 0);
+          return learnFromDoing(spell);
         else
           return FALSE;
       } else {
-        if (doesKnowSkill(spell) &&
-            !(value = learnFromDoing(spell, SILENT_NO, 0))) {
+        if (doesKnowSkill(spell) && !(value = learnFromDoing(spell))) {
           if ((spell2 >= 0) &&
               (getDiscipline(DISC_COMBAT)->getLearnedness() >=
                 MAX_DISC_LEARNEDNESS) &&
               doesKnowSkill(spell2)) {
-            return learnFromDoing(spell2, SILENT_NO, 0);
+            return learnFromDoing(spell2);
           } else
             return FALSE;
         }
@@ -2822,7 +2638,7 @@ int TPerson::learnFromDoingUnusual(learnUnusualTypeT type, spellNumT spell,
         return FALSE;
       } else {
         if (doesKnowSkill(spell))
-          return learnFromDoing(spell, SILENT_NO, 0);
+          return learnFromDoing(spell);
         else
           return FALSE;
       }
@@ -2839,7 +2655,7 @@ int TPerson::learnFromDoingUnusual(learnUnusualTypeT type, spellNumT spell,
         return FALSE;
       } else {
         if (doesKnowSkill(spell))
-          return learnFromDoing(spell, SILENT_NO, 1);
+          return learnFromDoing(spell, true);
         else
           return FALSE;
       }
@@ -2853,141 +2669,40 @@ int TPerson::learnFromDoingUnusual(learnUnusualTypeT type, spellNumT spell,
   return FALSE;
 }
 
-// flags 1 = linear/no discipline
-int TMonster::learnFromDoing(spellNumT sknum, silentTypeT silent,
-  unsigned int) {
-  return FALSE;
-}
+int TMonster::learnFromDoing(spellNumT sknum, bool forced) { return false; }
 
-// flags |= 1 == forced learn
-int TPerson::learnFromDoing(spellNumT sknum, silentTypeT silent,
-  unsigned int flags) {
-  CSkill* sk;
-  CDiscipline *assDiscipline, *discipline;
-  int chanceDisc = 0, chanceAss = 0, discLearn = 0;
-  char tString[256];
+int TPerson::learnFromDoing(spellNumT sknum, bool forced) {
+  // Minimum time between learning attempts
+  constexpr int HONE_INTERVAL = 3 * SECS_PER_REAL_MIN;
 
-  if (isImmortal() || !desc || roomp->isRoomFlag(ROOM_ARENA)) {
-    return FALSE;
+  CSkill* sk = getSkill(sknum);
+  const bool knowsSkill = sk && doesKnowSkill(sknum);
+  const bool isValidSkill =
+    discArray[sknum] && !std::string_view{discArray[sknum]->name}.empty();
+  const auto timeSinceLastHone = time(0) - (sk ? sk->lastUsed : 0);
+  const bool canHoneSkill = timeSinceLastHone >= HONE_INTERVAL;
+
+  if (isImmortal() || roomp->isRoomFlag(ROOM_ARENA) || !isValidSkill ||
+      !knowsSkill || !canHoneSkill) {
+    return false;
   }
 
-  if (!discArray[sknum] || !*discArray[sknum]->name ||
-      discArray[sknum]->startLearnDo == -1) {
-    return FALSE;
-  }
-  if (!doesKnowSkill(sknum)) {
-    return FALSE;
-  }
+  const spellInfo& info = *discArray[sknum];
+  const discNumT discNum = info.disc;
 
-  sk = getSkill(sknum);
-  if (!sk) {
-    return FALSE;
+  const int maxNaturalLearnedness =
+    std::min(getMaxSkillValue(sknum), short{MAX_SKILL_LEARNEDNESS});
+  int currentLearnedness = getRawNatSkillValue(sknum);
+  if (currentLearnedness >= maxNaturalLearnedness) {
+    return false;
   }
 
-  int actual = getRawNatSkillValue(sknum);
-  if (actual < getMaxSkillValue(sknum)) {
-    learnAttemptLog(this, sknum);
-    learnLearnednessLog(this, sknum, actual);
-  }
+  learnAttemptLog(this, sknum);
+  learnLearnednessLog(this, sknum, currentLearnedness);
 
-  // this prevents them from gaining further without a minimum wait between
-  // increases. Allow less minimum wait time between gains
-
-  if (actual <= 50) {
-    if ((time(0) - sk->lastUsed) < (SECS_PER_REAL_MIN / 2)) {
-      return FALSE;
-    }
-  } else if ((time(0) - sk->lastUsed) < (3 * SECS_PER_REAL_MIN)) {
-    return FALSE;
-  }
-
-  // DISCIPLINE LEARN BY DOING FIRST- PLAYERS DO *NOT* SEE THIS
-  // first set learning rates
-  // discipline and assDiscipline are used later to hold discipline number
-  // here they are just used to hold if the learning should take place
-
-  if (discArray[sknum]->disc == DISC_COMBAT ||
-      discArray[sknum]->disc == DISC_SLASH ||
-      discArray[sknum]->disc == DISC_BLUNT ||
-      discArray[sknum]->disc == DISC_PIERCE ||
-      discArray[sknum]->disc == DISC_RANGED ||
-      discArray[sknum]->disc == DISC_BAREHAND) {
-    chanceDisc = ::number(0, 200);
-    chanceAss = ::number(0, 400);
-  } else if (discArray[sknum]->assDisc == discArray[sknum]->disc) {
-    // advanced discipline here
-    chanceDisc = ::number(0, 150);
-    chanceAss = 1;  // no chance of learn
-  } else {
-    chanceDisc = ::number(0, 200);
-    chanceAss = ::number(0, 400);
-  }
-
-  if ((actual >= MAX_SKILL_LEARNEDNESS) ||
-      (actual >= getMaxSkillValue(sknum))) {
-    chanceDisc = (max(0, chanceDisc - 25));
-    chanceAss = (max(0, chanceAss - 25));
-  }
-
-  if (!chanceDisc) {
-    //   do skill's disc learning here COSMO MARKER
-    if (!(discipline = getDiscipline(discArray[sknum]->disc))) {
-#if DISC_DEBUG
-      vlogf(LOG_SILENT,
-        format("(%s) has a skill (%d) but doesnt have the discipline") %
-          getName() % sknum);
-#endif
-      return FALSE;
-    }
-    discLearn = discipline->getDoLearnedness();
-    discLearn = max(1, discLearn);
-    discLearn = min(100, discLearn + 1);
-    if (discLearn < 100) {
-      discipline->setDoLearnedness(discLearn);
-#if DISC_DEBUG
-      vlogf(LOG_SILENT,
-        format("%s just learned something in %s, Learn = %d.") % getName() %
-          discNames[(discArray[sknum]->assDisc)].properName % discLearn);
-#endif
-    }
-  }
-  if (!chanceAss) {
-    if (!(assDiscipline = getDiscipline(discArray[sknum]->assDisc))) {
-#if DISC_DEBUG
-      vlogf(LOG_SILENT,
-        format("(%s) has a skill (%d) but doesnt have the assDisc") %
-          getName() % sknum);
-#endif
-      return FALSE;
-    }
-    discLearn = assDiscipline->getDoLearnedness();
-    discLearn = max(1, discLearn);
-    discLearn = min(100, discLearn + 1);
-    if (discLearn < 100) {
-      assDiscipline->setDoLearnedness(discLearn);
-#if DISC_DEBUG
-      vlogf(LOG_SILENT,
-        format("%s just learned something in %s, Learn = %d.") % getName() %
-          discNames[(discArray[sknum]->assDisc)].properName % discLearn);
-#endif
-    }
-  }
-
-  // SKILL LEARNING NOW
-
-  if (actual >= getMaxSkillValue(sknum)) {
-    return FALSE;
-  }
-
-  if (IS_SET(flags, 1U)) {
-    // learn
-  } else {
-    const int max_amt = MAX_SKILL_LEARNEDNESS;
-    float amount = ((float)max_amt - (float)actual) / ((float)max_amt);
-#if DISC_DEBUG
-    vlogf(LOG_SILENT, format("learnFromDoing (%s) amt(%f) max(%d) actual(%d)") %
-                        discArray[sknum]->name % amount % max_amt % actual);
-#endif
+  if (!forced) {
+    constexpr double max_amt = MAX_SKILL_LEARNEDNESS;
+    double amount = (max_amt - currentLearnedness) / max_amt;
 
     // some basic background on how this was formulated.
     // let y = f(amount) = the percentage chance we raise the skill 1%
@@ -3003,53 +2718,75 @@ int TPerson::learnFromDoing(spellNumT sknum, silentTypeT silent,
     // y = 100% * amount ^ (B)
     // we desire B to be in range 1.0 (high wis) to 3.5 (low wis)
     // solving for a linear formula, gave slope of (-1/60) and intersect of 4
-    float power;
-    power = 3.0 - (plotStat(STAT_CURRENT, STAT_WIS, 1.0, 2.5, 1.75, 1.0));
-    int chance = (int)(1000.0 * pow(amount, power));
+    const double power =
+      3.0 - plotStat(STAT_CURRENT, STAT_WIS, 1.0, 2.5, 1.75, 1.0);
 
-    // make a minimum chance of increase.
-    if (amount > 0.0)
-      chance = max(15, chance);
+    // Minimum chance of 15/1000 (1.5%)
+    const int chance = std::max(15.0, 1000.0 * pow(amount, power));
 
-    if (::number(0, 999) >= chance)
-      return FALSE;
+    if (::number(0, 999) >= chance) {
+      return false;
+    }
   }
 
-#if 1
-  if (!silent) {
+  // All skills increase by 1% per hone with new LBD system, as current
+  // learnedness is now used as effectiveness rather than skill success chance.
+  constexpr int increaseAmount = 1;
+  setSkillValue(sknum, getSkillValue(sknum) + increaseAmount);
+  setNatSkillValue(sknum, currentLearnedness + increaseAmount);
+  learnSuccessLog(this, sknum, increaseAmount);
+  sk->lastUsed = time(0);
+  const bool maxedSkill = getNatSkillValue(sknum) == currentLearnedness;
+  const bool reachedCurrentPotential =
+    getNatSkillValue(sknum) == getMaxSkillValue(sknum);
+
+  std::ostringstream honeMessage;
+
+  auto addHoneMessageLine = [&info, &honeMessage](std::string_view msg) {
+    honeMessage << format("<c>You %s %s.<z>\n\r") % msg % info.name;
+  };
+
+  if (IS_SET(info.comp_types, COMP_MATERIAL)) {
+    sstring msg = format("feel you have %s control over the powers of") %
+                  (maxedSkill ? "total" : "more");
+    addHoneMessageLine(msg);
+
+  } else if (info.holyStrength > 0) {
+    const sstring deityName = yourDeity(sknum, FIRST_PERSON);
+    const sstring msg =
+      maxedSkill
+        ? format("feel %s has blessed you fully with the powers of") % deityName
+        : format("feel %s favoring you more in respects to") % deityName;
+    addHoneMessageLine(msg);
+  } else {
+    const sstring msg = maxedSkill ? "feel you have total mastery over"
+                                   : "feel your skills honing in regards to";
+    addHoneMessageLine(msg);
+  }
+
+  if (maxedSkill) {
+    if (sknum == SKILL_KICK_MONK) {
+      setQuestBit(TOG_ELIGIBLE_ADVANCED_KICKING);
+
+      sendTo(COLOR_BASIC,
+        "<c>Perhaps your guildmaster could help you with <p>advanced "
+        "kicking<c> now.<1>\n\r");
+    }
+  } else if (getNatSkillValue(sknum) == getMaxSkillValue(sknum)) {
     if ((discArray[sknum]->comp_types & COMP_MATERIAL))
-      strcpy(tString, "feel you have more control over the powers of");
+      strcpy(honeMessage,
+        "feel you have all the control you can currently obtain of");
     else if (discArray[sknum]->holyStrength) {
       sstring tStDeity("");
 
       tStDeity = yourDeity(sknum, FIRST_PERSON);
-      sprintf(tString, "feel %s favoring you more in respects to",
+      sprintf(honeMessage,
+        "feel %s refuses to bless you more, for now, in respects to",
         tStDeity.c_str());
     } else
-      strcpy(tString, "feel your skills honing in regards to");
-
-    sendTo(COLOR_BASIC,
-      format("<c>You %s %s.<z>\n\r") % tString % discArray[sknum]->name);
+      strcpy(honeMessage,
+        "feel you have all the control you can currently have over");
   }
-#else
-  if (!silent)
-    sendTo(COLOR_BASIC, format("<c>You increase your mastery of %s.<z>\n\r") %
-                          discArray[sknum]->name);
-#endif
-
-  int boost = 1;
-  if (discArray[sknum]->amtLearnDo > 1) {
-    boost = discArray[sknum]->amtLearnDo;
-    if ((actual + boost) > 100)
-      boost = 100 - actual;
-  }
-
-#if DISC_DEBUG
-  vlogf(LOG_SILENT, format("learnFromDoing (%s)(%d): actual (%d), boost (%d)") %
-                      discArray[sknum]->name % sknum % actual % boost);
-#endif
-  setSkillValue(sknum, getSkillValue(sknum) + boost);
-  setNatSkillValue(sknum, actual + boost);
 
   if (hasQuestBit(TOG_STARTED_MONK_RED) &&
       !hasQuestBit(TOG_FINISHED_MONK_RED)) {
@@ -3070,53 +2807,8 @@ int TPerson::learnFromDoing(spellNumT sknum, silentTypeT silent,
     }
   }
 
-  sk->lastUsed = time(0);
-  learnSuccessLog(this, sknum, boost);
-
-  if (getNatSkillValue(sknum) == 100) {
-    if ((discArray[sknum]->comp_types & COMP_MATERIAL))
-      strcpy(tString, "feel you have total control over the powers of");
-    else if (discArray[sknum]->holyStrength) {
-      sstring tStDeity("");
-
-      tStDeity = yourDeity(sknum, FIRST_PERSON);
-      sprintf(tString, "feel %s has blessed you fully with the powers of",
-        tStDeity.c_str());
-    } else
-      strcpy(tString, "feel you have total mastery over");
-
-    if (!silent)
-      sendTo(COLOR_BASIC,
-        format("<c>You %s %s.<z>\n\r") % tString % discArray[sknum]->name);
-
-    if (doesKnowSkill(SKILL_KICK_MONK) && sknum == SKILL_KICK_MONK) {
-      setQuestBit(TOG_ELIGIBLE_ADVANCED_KICKING);
-
-      sendTo(COLOR_BASIC,
-        "<c>Perhaps your guildmaster could help you with <p>advanced "
-        "kicking<c> now.<1>\n\r");
-    }
-  } else if (getNatSkillValue(sknum) == getMaxSkillValue(sknum)) {
-    if ((discArray[sknum]->comp_types & COMP_MATERIAL))
-      strcpy(tString,
-        "feel you have all the control you can currently obtain of");
-    else if (discArray[sknum]->holyStrength) {
-      sstring tStDeity("");
-
-      tStDeity = yourDeity(sknum, FIRST_PERSON);
-      sprintf(tString,
-        "feel %s refuses to bless you more, for now, in respects to",
-        tStDeity.c_str());
-    } else
-      strcpy(tString,
-        "feel you have all the control you can currently have over");
-
-    if (!silent)
-      sendTo(COLOR_BASIC,
-        format("<c>You %s %s.<z>\n\r") % tString % discArray[sknum]->name);
-  }
-
-  return TRUE;
+  sendTo(COLOR_BASIC, honeMessage.str());
+  return true;
 }
 
 void TBeing::addSkillLag(spellNumT skill, int rc) {
@@ -3171,27 +2863,3 @@ CMasterDiscipline::~CMasterDiscipline() {
     disc[i] = NULL;
   }
 }
-
-CDiscipline::CDiscipline() :
-  uNatLearnedness(0),
-  uLearnedness(0),
-  uDoLearnedness(0),
-  ok_for_class(0) {}
-
-CDiscipline::CDiscipline(const CDiscipline& a) :
-  uNatLearnedness(a.uNatLearnedness),
-  uLearnedness(a.uLearnedness),
-  uDoLearnedness(a.uDoLearnedness),
-  ok_for_class(a.ok_for_class) {}
-
-CDiscipline& CDiscipline::operator=(const CDiscipline& a) {
-  if (this == &a)
-    return *this;
-  uNatLearnedness = a.uNatLearnedness;
-  uLearnedness = a.uLearnedness;
-  uDoLearnedness = a.uDoLearnedness;
-  ok_for_class = a.ok_for_class;
-  return *this;
-}
-
-CDiscipline::~CDiscipline() {}

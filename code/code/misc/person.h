@@ -147,7 +147,7 @@ class TPerson : public TBeing {
     virtual bool isDragonRideable() const { return false; }
     virtual void failCharm(TBeing*);
     virtual int learnFromDoingUnusual(learnUnusualTypeT, spellNumT, int);
-    virtual int learnFromDoing(spellNumT, silentTypeT, unsigned int);
+    virtual int learnFromDoing(spellNumT, bool forced = false);
     virtual immortalTypeT isImmortal(int level = GOD_LEVEL1) const;
     void dropItemsToRoom(safeTypeT, dropNukeT);
     virtual TThing& operator+=(TThing& t);

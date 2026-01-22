@@ -2496,14 +2496,16 @@ int TBeing::hit(TBeing* target, int pulse) {
 
     if (awake() && getPosition() < POSITION_CRAWLING && (fx > 0 || fy > 0)) {
       if (doesKnowSkill(SKILL_GROUNDFIGHTING)) {
-        if (bSuccess(SKILL_GROUNDFIGHTING))
-          ;  // do nothing, just for sake of learning
+        if (bSuccess(SKILL_GROUNDFIGHTING)) {
+          // do nothing, just for sake of learning
+        }
       }
     }
     if (doesKnowSkill(SKILL_CHIVALRY) && (getPosition() == POSITION_MOUNTED) &&
         (fx > 0 || fy > 0)) {
-      if (bSuccess(SKILL_CHIVALRY))
-        ;  // do nothing, just for sake of learning
+      if (bSuccess(SKILL_CHIVALRY)) {
+        // do nothing, just for sake of learning
+      }
     }
   }
 
@@ -3095,7 +3097,7 @@ int TBeing::specAttackMod(const TBeing* target) const {
   }
 
 
-  
+
   return mod;
 }
 
@@ -3142,7 +3144,7 @@ int TBeing::specialAttack(TBeing* target, spellNumT skill,
     if (target->isWary())
       situationalModifier -= 10;
     else
-      if (!target->affectedBySpell(SKILL_SUBTERFUGE)) 
+      if (!target->affectedBySpell(SKILL_SUBTERFUGE))
         target->makeWary();
   }
 
@@ -3762,7 +3764,7 @@ void TBeing::normalHitMessage(TBeing* v, TThing* weapon, spellNumT w_type,
       }
 
       if ((sknum != TYPE_UNDEFINED) && !::number(0, roll))
-        learnFromDoing(sknum, SILENT_NO, 0);
+        learnFromDoing(sknum);
     }
   }
 }
@@ -6493,7 +6495,7 @@ int TBeing::checkAdvDefense() {
   double agiMod = getStatMod(STAT_AGI);
   double braMod = (1 + getStatMod(STAT_BRA))/2;
   amt = (int)(amt * agiMod * braMod);
-  
+
   if (!percentChance(amt)) {
     return 0;
   }
@@ -6556,5 +6558,5 @@ int TBeing::doAdvDefense(TBeing* v, TThing* weapon, int* dam, int w_type, wearSl
     return TRUE;
   }
     return FALSE;
-  
+
 }

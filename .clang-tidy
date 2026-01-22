@@ -20,6 +20,7 @@
 #       readability-avoid-nested-conditional-operator, readability-implicit-bool-conversion, readability-named-parameter
 #   - Requires GSL: cppcoreguidelines-owning-memory
 #   - C++23 only: modernize-use-std-print
+#   - Aliases of other enabled checks: hicpp-special-member-functions (alias of cppcoreguidelines-special-member-functions)
 #
 # Specifically not disabled:
 #   - readability-braces-around-statements: Enforces consistent use of braces, improving readability and reducing errors
@@ -52,6 +53,7 @@ Checks: >
   -google-runtime-int,
   -hicpp-named-parameter,
   -hicpp-signed-bitwise,
+  -hicpp-special-member-functions,
   -linuxkernel-*,
   -llvm-header-guard,
   -llvm-include-order,
@@ -72,30 +74,10 @@ Checks: >
   -zircon-*,
 
 CheckOptions:
-  # Naming Conventions (match existing codebase patterns)
-  - key: readability-identifier-naming.ClassCase
-    value: CamelCase
-  - key: readability-identifier-naming.StructCase
-    value: CamelCase
-  - key: readability-identifier-naming.FunctionCase
-    value: camelBack
-  - key: readability-identifier-naming.MethodCase
-    value: camelBack
-  - key: readability-identifier-naming.VariableCase
-    value: camelBack
-  - key: readability-identifier-naming.ParameterCase
-    value: camelBack
-  - key: readability-identifier-naming.MemberCase
-    value: camelBack
-  - key: readability-identifier-naming.EnumConstantCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.GlobalConstantCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.StaticConstantCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.NamespaceCase
-    value: lower_case
-
+  # Base classes must have virtual destructors, so don't enforce "Rule of Zero/Three/Five" for
+  # classes with ONLY a defaulted virtual destructor.
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
   # Performance Check Configuration
   - key: performance-for-range-copy.WarnOnAllAutoCopies
     value: true

@@ -126,24 +126,19 @@ extern discNumT& operator++(discNumT&, int);
 
 class CDiscipline {
   private:
-    int uNatLearnedness;
-    int uLearnedness;
-    int uDoLearnedness;
+    int uNatLearnedness{0};
+    int uLearnedness{0};
 
   public:
-    int ok_for_class;
-    CDiscipline();
-    CDiscipline(const CDiscipline& a);
-    CDiscipline& operator=(const CDiscipline& a);
-    virtual ~CDiscipline();
+    int ok_for_class{0};
+
+    virtual ~CDiscipline() = default;
 
     virtual bool isBasic() { return false; }
     virtual bool isFast() { return false; }
     virtual bool isAutomatic() { return false; }
+    virtual CDiscipline* cloneMe() = 0;
 
-    virtual CDiscipline* cloneMe() = 0;  // a virtual constructor
-    int getDoLearnedness() const;
-    void setDoLearnedness(int);
     void setNatLearnedness(int);
     int getNatLearnedness() const;
     int getLearnedness() const;
@@ -163,7 +158,7 @@ class CMasterDiscipline {
     ~CMasterDiscipline();
 };
 
-discNumT getDisciplineNumber(spellNumT, int);
+discNumT getDisciplineNumber(spellNumT, int = 0);
 extern bool enforceHolySym(const TBeing* ch, spellNumT spell, bool checkDamage);
 void CS(spellNumT spell_num);
 void LogDam(const TBeing*, spellNumT spell_num, int);

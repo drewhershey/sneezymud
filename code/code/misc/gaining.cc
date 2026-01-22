@@ -11,6 +11,7 @@
 #include "database.h"
 #include "spec_mobs.h"
 #include "materials.h"
+#include "skill_training.h"
 #include "skills.h"
 #include "obj_note.h"
 
@@ -376,6 +377,26 @@ const char* how_good(int percent) {
     return " (maxed)";
   else
     return " (superb)";
+}
+
+// Returns a practice-themed label for skill effectiveness percentage.
+std::string_view how_effective(int percent) {
+  static constexpr auto tiers =
+    std::to_array<std::pair<int, std::string_view>>({
+      {MAX_SKILL_LEARNEDNESS, "master"},
+      {80, "expert"},
+      {60, "adept"},
+      {40, "skilled"},
+      {20, "proficient"},
+    });
+
+  for (const auto& [threshold, label] : tiers) {
+    if (percent >= threshold) {
+      return label;
+    }
+  }
+
+  return "novice";
 }
 
 void give_avenger(TBeing* gm, TBeing* ch) {
@@ -1216,10 +1237,8 @@ void TPerson::raiseLevel(classIndT Class) {
 
 void TPerson::doLevelSkillsLearn(discNumT discipline, int initial, int final) {
   spellNumT i;
-  int value, discLearn = 0;
+  int value;
   char buf[256];
-
-  discLearn = getDiscipline(discipline)->getNatLearnedness();
 
   for (i = MIN_SPELL; i < MAX_SKILL; i++) {
     if (hideThisSpell(i))
@@ -1229,13 +1248,9 @@ void TPerson::doLevelSkillsLearn(discNumT discipline, int initial, int final) {
       continue;
 
     if ((initial < discArray[i]->start) && (final >= discArray[i]->start)) {
-      if (discArray[i]->startLearnDo > 0)
-        value = min((int)discArray[i]->startLearnDo, discArray[i]->learn);
-      else
-        value = discArray[i]->learn;
-
+      // Skills start at 1% effectiveness when first learned
+      value = 1;
       value = max(value, (int)getRawNatSkillValue(i));
-      value = max(value, 1);
       value = min(value, (int)MAX_SKILL_LEARNEDNESS);
       setNatSkillValue(i, value);
       setSkillValue(i, value);
@@ -1243,36 +1258,9 @@ void TPerson::doLevelSkillsLearn(discNumT discipline, int initial, int final) {
 
       sprintf(buf, "You have just learned %s!", discArray[i]->name);
       act(buf, FALSE, this, 0, NULL, TO_CHAR);
-    } else if ((*discArray[i]->name) && (initial >= discArray[i]->start) &&
-               !(discArray[i]->toggle && !hasQuestBit(discArray[i]->toggle))) {
-      if (discArray[i]->startLearnDo == -1) {  // doesnt use learn by doing
-        value = discArray[i]->learn * (1 + discLearn - discArray[i]->start);
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-        affectTotal();
-      } else {
-        if (discArray[i]->startLearnDo > 0) {
-          if (getRawSkillValue(i) >= discArray[i]->startLearnDo) {
-            // do nothing
-          } else if (getRawSkillValue(i) >= getMaxSkillValue(i)) {
-            // do nothing
-          } else {
-            value = min(discArray[i]->startLearnDo, getMaxSkillValue(i));
-            value = max(value, (int)getRawNatSkillValue(i));
-            value = max(value, 1);
-            value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-            setNatSkillValue(i, value);
-            setSkillValue(i, value);
-            affectTotal();
-          }
-        } else {
-          // do nothing
-        }
-      }
     }
+    // Already-known skills aren't auto-boosted; improve via practice or
+    // training
   }
 }
 
@@ -1977,24 +1965,14 @@ int TBeing::doTraining(TBeing* ch, TMonster* me, classIndT accclass, int offset,
           ch->setSpellEligibleToggle(me, i, SILENT_NO);
           continue;
         }
-        if ((discArray[i]->startLearnDo >=
-              0)) {  // learned by doing with a bump
-          value = min((int)discArray[i]->startLearnDo, discArray[i]->learn);
-          value = max(value, (int)getRawNatSkillValue(i));
-          value = max(value, 1);
-          value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-          ch->setNatSkillValue(i, value);
-          ch->setSkillValue(i, value);
-          ch->affectTotal();
-        } else {
-          value = discArray[i]->learn;
-          value = max(value, (int)getRawNatSkillValue(i));
-          value = max(value, 1);
-          value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-          ch->setNatSkillValue(i, value);
-          ch->setSkillValue(i, value);
-          ch->affectTotal();
-        }
+        // Skills start at 1% effectiveness when first learned
+        value = 1;
+        value = max(value, (int)getRawNatSkillValue(i));
+        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
+        ch->setNatSkillValue(i, value);
+        ch->setSkillValue(i, value);
+        ch->affectTotal();
+
         sprintf(buf, "You have just learned %s!", discArray[i]->name);
         act(buf, FALSE, me, 0, ch, TO_VICT);
         act("$N's head glows for a brief second.", FALSE, me, 0, ch,
@@ -2002,8 +1980,7 @@ int TBeing::doTraining(TBeing* ch, TMonster* me, classIndT accclass, int offset,
 
         unsigned int comp;
         for (comp = 0;
-             (comp < CompInfo.size()) && (i != CompInfo[comp].spell_num);
-             comp++)
+          (comp < CompInfo.size()) && (i != CompInfo[comp].spell_num); comp++)
           ;
 
         if (comp != CompInfo.size() && CompInfo[comp].comp_num >= 0) {
@@ -2030,36 +2007,9 @@ int TBeing::doTraining(TBeing* ch, TMonster* me, classIndT accclass, int offset,
           ch->setNatSkillValue(i, 1);
           ch->setSkillValue(i, 1);
         }
-
-        if (discArray[i]->startLearnDo < 0) {  // doesnt use learn by doing
-          value = (final - discArray[i]->start + 1) * discArray[i]->learn;
-          value = max(value, (int)getRawNatSkillValue(i));
-          value = max(value, 1);
-          value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-          ch->setNatSkillValue(i, value);
-          ch->setSkillValue(i, min((int)ch->getSkillValue(i), value));
-          ch->affectTotal();
-        } else {
-          if (discArray[i]->startLearnDo > 0) {
-            if (ch->getRawSkillValue(i) >= discArray[i]->startLearnDo) {
-              // do nothing
-              ch->affectTotal();
-            } else if (ch->getRawSkillValue(i) >= ch->getMaxSkillValue(i)) {
-              // do nothing
-              ch->affectTotal();
-            } else {
-              value = min(discArray[i]->startLearnDo, ch->getMaxSkillValue(i));
-              value = max(value, (int)ch->getRawNatSkillValue(i));
-              value = max(value, 1);
-              value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-              ch->setNatSkillValue(i, value);
-              ch->setSkillValue(i, value);
-              ch->affectTotal();
-            }
-          } else {
-            // do nothing
-          }
-        }
+        // Already-known skills aren't auto-boosted; improve via practice or
+        // training
+        ch->affectTotal();
       }
     }
   }
@@ -2219,7 +2169,6 @@ int TBeing::doTraining(TBeing* ch, TMonster* me, classIndT accclass, int offset,
 int TBeing::initiateSkillsLearning(discNumT discipline, int initial,
   int final) {
   spellNumT i;
-  int amount = 0;
   int value;
 
   for (i = MIN_SPELL; i < MAX_SKILL; i++) {
@@ -2237,58 +2186,17 @@ int TBeing::initiateSkillsLearning(discNumT discipline, int initial,
     if (discArray[i]->toggle && !hasQuestBit(discArray[i]->toggle)) {
       continue;
     }
-    amount = final - initial;
     if ((*discArray[i]->name) && (initial < discArray[i]->start) &&
         (final >= discArray[i]->start)) {
-      amount = amount - (discArray[i]->start - initial);
-      if ((discArray[i]->startLearnDo > 0)) {  // learned by do with a bump
-        value =
-          min((int)discArray[i]->startLearnDo, (amount * discArray[i]->learn));
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-      } else if (discArray[i]->startLearnDo == 0) {
-        value = max(1, discArray[i]->learn);
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-      } else if (discArray[i]->startLearnDo < 0) {
-        value = max(1, (amount * discArray[i]->learn));
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-      }
-    } else if (final >= discArray[i]->start) {
-      if (discArray[i]->startLearnDo < 0) {  // doesnt use learn by doing
-        value = (final - discArray[i]->start + 1) * discArray[i]->learn;
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-      } else if (discArray[i]->startLearnDo == 0) {
-        value = max((int)getNatSkillValue(i), discArray[i]->learn);
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-      } else {
-        value = min((int)discArray[i]->startLearnDo,
-          (discArray[i]->learn * (final + 1 - discArray[i]->start)));
-        value = max(value, (int)getRawNatSkillValue(i));
-        value = max(value, 1);
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(i, value);
-        setSkillValue(i, value);
-      }
+      // Skills start at 1% effectiveness when first learned
+      value = 1;
+      value = max(value, (int)getRawNatSkillValue(i));
+      value = min(value, (int)MAX_SKILL_LEARNEDNESS);
+      setNatSkillValue(i, value);
+      setSkillValue(i, value);
     }
+    // Already-known skills aren't auto-boosted; improve via practice or
+    // training
   }
   affectTotal();
   doSave(SILENT_YES);
@@ -2311,6 +2219,12 @@ int GenericGuildMaster(TBeing* ch, cmdTypeT cmd, const char* arg, TMonster* me,
   sstring argument = arg;
   int practices = 0;
 
+  if (ch->isImmortal() || !me)
+    return FALSE;
+
+  if (generic_trainer_stuff(me, ch))
+    return TRUE;
+
   if (!ch->hasClass(Class)) {
     sstring buf;
 
@@ -2321,11 +2235,10 @@ int GenericGuildMaster(TBeing* ch, cmdTypeT cmd, const char* arg, TMonster* me,
     return TRUE;
   }
 
-  if (ch->isImmortal() || !me)
-    return FALSE;
-
-  if (generic_trainer_stuff(me, ch))
-    return TRUE;
+  // Handle "gain train ..." commands for skill training purchase
+  if (is_abbrev(argument.word(0), "train")) {
+    return handleSkillTraining(*ch, *me, argument);
+  }
 
   if (ch->getLevel(cit) < (me->GetMaxLevel() / 2) ||
       (MAX_MORT == ch->getLevel(cit) && MAX_MORT <= me->GetMaxLevel() / 2)) {
@@ -2406,7 +2319,7 @@ TMonster* FindMobInRoomWithProcNum(int room, int num) {
     return NULL;
 
   for (StuffIter it = real_roomp(room)->stuff.begin();
-       it != real_roomp(room)->stuff.end() && (t = *it); ++it) {
+    it != real_roomp(room)->stuff.end() && (t = *it); ++it) {
     TMonster* tmons = dynamic_cast<TMonster*>(t);
     if (tmons && (tmons->spec == num))
       return tmons;

@@ -67,13 +67,6 @@
 #include "disc_basic_combat.h"
 #include "disc_basic_adventuring.h"
 #include "disc_advanced_adventuring.h"
-#if 0
-#include "disc_jumando.h"
-#include "disc_kararki.h"
-#include "disc_zinra.h"
-#include "disc_yofu.h"
-#include "disc_akodi.h"
-#endif
 #include "disc_mage_wizardry.h"
 #include "disc_mage_lore.h"
 #include "disc_cleric_theology.h"
@@ -91,59 +84,14 @@
 #include "disc_psionics.h"
 #include "disc_commoner.h"
 
-static bool doesKnow(byte know) {
-  if (know <= 0)
-    return FALSE;
-  else
-    return TRUE;
-}
-
 CSkill* TBeing::getSkill(spellNumT skill) const {
-  discNumT which = getDisciplineNumber(skill, FALSE);
-  if (which == DISC_NONE) {
-    // silly core-generator, but helps to track down the item that is bad
-    vlogf(LOG_BUG, format("Bad discipline for skill %d in getSkill()") % skill);
-    return NULL;
-  }
-
-  mud_assert(skill > TYPE_UNDEFINED && skill < MAX_SKILL,
-    "Bad skill in getSkill()");
-
-  CDiscipline* cd = getDiscipline(which);
-  if (!cd)
-    return NULL;
+  CDiscipline* cd = getDiscipline(skill);
 
   switch (skill) {
-#if 0
-    case SKILL_MASS_FORAGE:  //               392
-      return &((CDSurvival *) cd)->skMassForage;
-    case SKILL_TAN:  //                       394
-      return &((CDSurvival *) cd)->skTan;
-    case SKILL_HOLY_WEAPONS:  //              454             // not coded
-      return &((CDDeikhanMartial *) cd)->skHolyWeapons;
-    case SPELL_HOLY_LIGHT:  //                495         // not coded
-      return &((CDDeikhanVengeance *) cd)->skHolyLight;
-    case SKILL_BUTCHER:  //                    342  // not coded
-      return &((CDRanger *) cd)->skButcher;
-    case SPELL_FIND_FAMILIAR: // 35
-      return &((CDMage *) cd)->skFindFamiliar;
-    case SPELL_CHAIN_LIGHTNING:  //            123 // not coded
-      return &((CDSorcery *) cd)->skChainLightning;
-    case SPELL_DETECT_POISON:  //              174 // NOT CODED
-      return &((CDCleric *) cd)->skDetectPoison;
-    case SPELL_DETECT_POISON_DEIKHAN:  //     417     // not coded
-      return &((CDDeikhan *) cd)->skDetectPoisonDeikhan;
-    case SKILL_CASTING: // 961
-      return &((CDWizardry *) cd)->skCasting;
-    case SKILL_PRAYING: // 961
-      return &((CDFaith *) cd)->skPraying;
-#endif
-
       //  MAGE CLASS
-
       // disc_mage
     case SPELL_GUST:  // 0
-      return &((CDMage*)cd)->skGust;
+      return &(dynamic_cast<CDMage*>(cd))->skGust;
     case SPELL_SLING_SHOT:  // 1
       return &((CDMage*)cd)->skSlingShot;
     case SPELL_GUSHER:  // 2
@@ -1103,7 +1051,7 @@ CSkill* TBeing::getSkill(spellNumT skill) const {
     case SKILL_FISHBURBLE:
       return &((CDAdvAdventuring*)cd)->skKalysian;
     case SKILL_COMMON:
-      return &((CDAdvAdventuring *) cd)->skCommon;
+      return &((CDAdvAdventuring*)cd)->skCommon;
 
       // adventuring
     case SKILL_ALCOHOLISM:  // 668
@@ -1439,11 +1387,7 @@ CSkill* TBeing::getSkill(spellNumT skill) const {
 }
 
 bool TBeing::doesKnowSkill(spellNumT skill) const {
-  CSkill* sk = NULL;
-  if (!(sk = getSkill(skill)))
-    return FALSE;
-
-  return doesKnow(getMaxSkillValue(skill));
+  return getSkill(skill) && getMaxSkillValue(skill) > 0;
 }
 
 short TBeing::getRawSkillValue(spellNumT skill) const {
@@ -1512,30 +1456,6 @@ short TBeing::getRawNatSkillValue(spellNumT skill) const {
     return SKILL_MIN;
 
   return sk->getNatLearnedness();
-}
-
-int TBeing::getAdvDoLearning(spellNumT skill) const {
-  CSkill* sk;
-  int ret = -1;
-  CDiscipline* assDisc = NULL;
-
-  skill = getSkillNum(skill);
-
-  if (!(sk = getSkill(skill)))
-    return 0;
-
-  if (discArray[skill] && *discArray[skill]->name) {
-    if ((assDisc = getDiscipline(discArray[skill]->assDisc))) {
-      ret = assDisc->getDoLearnedness();
-      return ret;
-    } else {
-      vlogf(LOG_BUG, format("Someone (%s) doesnt have a valid associated "
-                            "discipline for skill (%d)") %
-                       getName() % skill);
-      return 0;
-    }
-  }
-  return 0;
 }
 
 int TBeing::getAdvLearning(spellNumT skill) const {

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <map>
+#include <vector>
 
 #include "extern.h"
 #include "sstring.h"
@@ -30,6 +30,7 @@ enum tweakTypeT {
   TWEAK_LOADRATE = 0,
   TWEAK_BURNRATE,
   TWEAK_FREEZEDAMRATE,
+  TWEAK_SKILLTRAININGCOST,
   MAX_TWEAK_TYPES
 };
 

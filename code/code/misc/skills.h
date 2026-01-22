@@ -30,7 +30,6 @@ class CSkill {
 extern bool bPassMageChecks(TBeing*, spellNumT, TThing*);
 extern bool bPassShamanChecks(TBeing*, spellNumT, TThing*);
 extern bool bPassClericChecks(TBeing*, spellNumT);
-extern byte defaultProficiency(byte, byte, byte);
 extern bool canDoVerbal(TBeing*);
 extern bool checkRoom(const TBeing*);
 extern critSuccT critSuccess(TBeing*, spellNumT);

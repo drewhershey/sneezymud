@@ -651,64 +651,24 @@ void TBeing::affectTotal() {
         continue;
       }
 
-      // First skills that are not learn by doing
-      if (discArray[num]->startLearnDo < 0) {
-        // Set natLearning
-        // remember we  store natLearning so be careful with it
+      value = discArray[num]->learn *
+              (cd->getNatLearnedness() - discArray[num]->start + 1);
+      value = min(value, 1);
+      value = max(value, (int)getRawNatSkillValue(num));
+      value = max(value, 1);
+      value = min(value, (int)MAX_SKILL_LEARNEDNESS);
 
-        value = discArray[num]->learn *
-                (cd->getNatLearnedness() - discArray[num]->start + 1);
-        value = max(value, 1);
-        value = max(value, discArray[num]->learn);
-        value = max(value, (int)getRawNatSkillValue(num));
-        value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-        setNatSkillValue(num, value);
+      setNatSkillValue(num, value);
 
-        // set Current learning with no learn by doing numbers
-        if (cd->getLearnedness() == cd->getNatLearnedness()) {
-          setSkillValue(num, value);
-        } else {
-          if (cd->getLearnedness() < discArray[num]->start) {
-            setSkillValue(num, 0);
-          } else {
-            value = getMaxSkillValue(num);  // uses Learnedness not NatLear
-            value = max(value, 1);
-            value = max(value, discArray[num]->learn);
-            value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-            setSkillValue(num, value);
-          }
-        }
-      } else {  // learn by doing
-                // set natural learning, be very careful since permanint numbers
-        value = discArray[num]->learn *
-                (cd->getNatLearnedness() - discArray[num]->start + 1);
-        value = min(value, (int)discArray[num]->startLearnDo);
-        value = max(value, (int)getRawNatSkillValue(num));
+      if (cd->getLearnedness() == cd->getNatLearnedness()) {
+        value = getRawNatSkillValue(num);
+        setSkillValue(num, value);
+      } else {
+        value = getMaxSkillValue(num);  // uses disc Learn not disc NatLearn
+        value = min((int)getRawNatSkillValue(num), value);
         value = max(value, 1);
         value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-
-        setNatSkillValue(num, value);
-
-        if (cd->getLearnedness() == cd->getNatLearnedness()) {
-          value = getRawNatSkillValue(num);
-          setSkillValue(num, value);
-        } else {
-          value = getMaxSkillValue(num);  // uses disc Learn not disc NatLearn
-          value = min((int)getRawNatSkillValue(num), value);
-          value = max(value, 1);
-          value = min(value, (int)MAX_SKILL_LEARNEDNESS);
-          if (cd->getLearnedness() <= cd->getNatLearnedness()) {
-            setSkillValue(num, value);
-          } else {
-            if (discArray[num]->startLearnDo > value) {
-              value = getMaxSkillValue(num);
-              value = min(value, (int)discArray[num]->startLearnDo);
-              setSkillValue(num, value);
-            } else {
-              setSkillValue(num, value);
-            }
-          }
-        }
+        setSkillValue(num, value);
       }
     }
   }

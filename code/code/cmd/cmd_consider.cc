@@ -300,7 +300,7 @@ void TBeing::doConsider(const char* argument) {
       return;
 
     if ((GetMaxLevel() <= MAX_MORT) && !::number(0, roll)) {
-      learnFromDoing(sknum, SILENT_NO, 0);
+      learnFromDoing(sknum);
     }
 
     addToWait(combatRound(1));

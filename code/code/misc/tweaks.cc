@@ -262,6 +262,8 @@ const sstring tweakInfoT::getTweakName(tweakTypeT tt) {
       return "BurnRate";
     case TWEAK_FREEZEDAMRATE:
       return "FreezeDamChance";
+    case TWEAK_SKILLTRAININGCOST:
+      return "SkillTrainingCost";
     case MAX_TWEAK_TYPES:
       return "";
   }

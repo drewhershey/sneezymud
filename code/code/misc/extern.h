@@ -28,6 +28,7 @@ extern void cleanCharBuf(char*);
 extern int split_string(const sstring& str, const sstring& sep,
   std::vector<sstring>& argv);
 extern const char* how_good(int);
+extern std::string_view how_effective(int);
 extern sstring sprintbit(unsigned long, const char* const[]);
 extern sstring sprintbit_64(uint64_t, const char* const[]);
 extern bool is_exact_spellname(const sstring&, const sstring&);

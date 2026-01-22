@@ -568,7 +568,6 @@ class TBeing : public TThing {
     bool isWinged() const;
     bool isFourLegged() const;
     int getAdvLearning(spellNumT) const;
-    int getAdvDoLearning(spellNumT) const;
     spellNumT getSkillNum(spellNumT) const;
     int getSkillDam(const TBeing*, spellNumT, int, int) const;
     void assignCorpsesToRooms();
@@ -600,7 +599,7 @@ class TBeing : public TThing {
     void checkGuardiansLight();
     int checkAdvDefense();
     int doAdvDefense(TBeing*, TThing*, int*, int, wearSlotT);
-    
+
 
     // Postmaster
     void postmasterSendMail(const char*, TMonster*);
@@ -638,6 +637,7 @@ class TBeing : public TThing {
     void sendFinalCastingMessages(bool, bool, skillUseTypeT);
 
     bool isValidDiscClass(discNumT, int, int);  // disc, classNum, class_ind
+    CDiscipline* getDiscipline(spellNumT) const;
     CDiscipline* getDiscipline(discNumT n) const;
     CSkill* getSkill(spellNumT n) const;
 
@@ -1108,7 +1108,7 @@ class TBeing : public TThing {
     int tripSuccess(TBeing*, spellNumT);
     void bandage(TBeing*, wearSlotT);
     virtual int learnFromDoingUnusual(learnUnusualTypeT, spellNumT, int) = 0;
-    virtual int learnFromDoing(spellNumT, silentTypeT, unsigned int) = 0;
+    virtual int learnFromDoing(spellNumT, bool forced = false) = 0;
     bool canBash(TBeing*, silentTypeT);
     bool canTrip(TBeing*, silentTypeT);
     bool canDisarm(TBeing*, silentTypeT);

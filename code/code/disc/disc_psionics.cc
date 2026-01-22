@@ -103,7 +103,7 @@ int TBeing::doPTell(const char* arg, bool visible) {
   if (rc)
     return FALSE;
 
-  learnFromDoing(SKILL_PSITELEPATHY, SILENT_NO, 0);
+  learnFromDoing(SKILL_PSITELEPATHY);
 
   const sstring capbuf = vict->pers(this);
   sstring nameBuf = capbuf.cap();
@@ -188,7 +188,7 @@ int TBeing::doPSay(const char* arg) {
   if (!*arg)
     sendTo("Yes, but WHAT do you want to say telepathically?\n\r");
   else {
-    learnFromDoing(SKILL_PSITELEPATHY, SILENT_NO, 0);
+    learnFromDoing(SKILL_PSITELEPATHY);
 
     const sstring message = arg;
 
@@ -314,7 +314,7 @@ void TBeing::doPShout(const sstring& message) {
     sendTo("What do you wish to broadcast to the world?\n\r");
     return;
   } else {
-    learnFromDoing(SKILL_PSITELEPATHY, SILENT_NO, 0);
+    learnFromDoing(SKILL_PSITELEPATHY);
 
     sendTo(COLOR_SPELLS,
       format("You telepathically send the message, \"%s<z>\"\n\r") % message);

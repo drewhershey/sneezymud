@@ -676,15 +676,6 @@ void TBeing::doHelp(const char* arg) {
       sprintf(buf2, " (%d)", discArray[skill]->learn);
       str += buf2;
     }
-    str += "\n\rLearn By Doing   : ";
-    str += norm();
-    str += ((discArray[skill]->startLearnDo == -1) ? "No" : "Yes");
-
-    if (isImmortal()) {
-      sprintf(buf2, "  %s(%d) (%d) %s", purple(),
-        discArray[skill]->startLearnDo, discArray[skill]->amtLearnDo, norm());
-      str += buf2;
-    }
 
     str += "\n\r";
 
@@ -992,15 +983,6 @@ void TBeing::doHelp(const char* arg) {
       str += buf2;
     }
 
-    str += purple();
-    str += "\n\rLearn By Doing   : ";
-    str += norm();
-    str += ((discArray[skill]->startLearnDo == -1) ? "No" : "Yes");
-    if (isImmortal()) {
-      sprintf(buf2, "  %s(%d) (%d) %s", purple(),
-        discArray[skill]->startLearnDo, discArray[skill]->amtLearnDo, norm());
-      str += buf2;
-    }
 
     str += purple();
     str += "\n\rModifier Stat    : ";

@@ -1241,23 +1241,21 @@ void TBeing::sendSkillsList(discNumT which) {
 
     if (!isImmortal()) {
       if (doesKnowSkill(i)) {
-        if ((i == SKILL_WIZARDRY) || (i == SKILL_RITUALISM) ||
-            (i == SKILL_DEVOTION)) {
-          sprintf(buf, "%s%-25.25s%s   Current: %-15s\n\r%-15s.\n\r", cyan(),
-            discArray[i]->name, norm(), how_good(getSkillValue(i)), how_long);
-        } else if (getMaxSkillValue(i) < MAX_SKILL_LEARNEDNESS) {
-          if (discArray[i]->startLearnDo > 0) {
-            sprintf(buf, "%s%-25.25s%s   Current: %-12s Potential: %-12s%s\n\r",
-              cyan(), discArray[i]->name, norm(), how_good(getSkillValue(i)),
-              how_good(getMaxSkillValue(i)), how_long);
-          } else {
-            sprintf(buf, "%s%-25.25s%s   Current: %-15s%s\n\r", cyan(),
-              discArray[i]->name, norm(), how_good(getSkillValue(i)), how_long);
-          }
+        int learnedness = getMaxSkillValue(i);
+        int effectiveness = getRawNatSkillValue(i);
+        int bonus = getSkillValue(i) - effectiveness;
+
+        char bonusBuf[32];
+        if (bonus > 0) {
+          sprintf(bonusBuf, "  Bonus: +%d%%", bonus);
         } else {
-          sprintf(buf, "%s%-25.25s%s   Current: %-15s%s\n\r", cyan(),
-            discArray[i]->name, norm(), how_good(getSkillValue(i)), how_long);
+          bonusBuf[0] = '\0';
         }
+
+        sprintf(buf,
+          "%s%-25.25s%s   Learnedness: %s (%d%%)  Effectiveness: %s (+%d%%)%s%s\n\r",
+          cyan(), discArray[i]->name, norm(), how_good(learnedness), learnedness,
+          how_effective(effectiveness), effectiveness, bonusBuf, how_long);
       } else {
         sprintf(buf, "%s%-25.25s%s   %-25s\n\r", cyan(), discArray[i]->name,
           norm(), how_long);
@@ -1344,19 +1342,38 @@ void TBeing::doPracSkill(const char* argument, spellNumT skNum) {
           continue;
         } else {
           found = 2;
-          // break;
-          sprintf(buf, "%s%-25.25s%s   Current: %-12s Potential: %-12s\n\r",
-            cyan(), discArray[skill]->name, norm(),
-            how_good(getSkillValue(skill)), how_good(getMaxSkillValue(skill)));
+          int learnedness = getMaxSkillValue(skill);
+          int effectiveness = getRawNatSkillValue(skill);
+          int bonus = getSkillValue(skill) - effectiveness;
+          char bonusBuf[32];
+          if (bonus > 0) {
+            sprintf(bonusBuf, "  Bonus: +%d%%", bonus);
+          } else {
+            bonusBuf[0] = '\0';
+          }
+          sprintf(buf,
+            "%s%-25.25s%s   Learnedness: %s (%d%%)  Effectiveness: %s (+%d%%)%s\n\r",
+            cyan(), discArray[skill]->name, norm(), how_good(learnedness),
+            learnedness, how_effective(effectiveness), effectiveness, bonusBuf);
           sendTo(COLOR_BASIC, buf);
         }
       }
     }
   }
   if (wiz && !(found == 1)) {
-    sprintf(buf, "%s%-25.25s%s   Current: %-12s Potential: %-12s\n\r", cyan(),
-      discArray[skNum]->name, norm(), how_good(getSkillValue(skNum)),
-      how_good(getMaxSkillValue(skNum)));
+    int learnedness = getMaxSkillValue(skNum);
+    int effectiveness = getRawNatSkillValue(skNum);
+    int bonus = getSkillValue(skNum) - effectiveness;
+    char bonusBuf[32];
+    if (bonus > 0) {
+      sprintf(bonusBuf, "  Bonus: +%d%%", bonus);
+    } else {
+      bonusBuf[0] = '\0';
+    }
+    sprintf(buf,
+      "%s%-25.25s%s   Learnedness: %s (%d%%)  Effectiveness: %s (+%d%%)%s\n\r",
+      cyan(), discArray[skNum]->name, norm(), how_good(learnedness), learnedness,
+      how_effective(effectiveness), effectiveness, bonusBuf);
     sendTo(COLOR_BASIC, buf);
   } else if (found == 2 || (skill > TYPE_UNDEFINED)) {
     // sprintf(buf, "%s%-25.25s%s   Current: %-12s Potential: %-12s\n\r",

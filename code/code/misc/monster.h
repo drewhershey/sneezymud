@@ -464,7 +464,7 @@ class TMonster : public TBeing {
     virtual bool isDragonRideable() const;
     virtual void failCharm(TBeing*);
     virtual int learnFromDoingUnusual(learnUnusualTypeT, spellNumT, int);
-    virtual int learnFromDoing(spellNumT, silentTypeT, unsigned int);
+    virtual int learnFromDoing(spellNumT, bool forced = false);
     int doHatefulStuff();
     virtual unsigned int getTimer() const;
     virtual void setTimer(unsigned int);

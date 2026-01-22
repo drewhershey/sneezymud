@@ -5854,8 +5854,8 @@ namespace {
         continue;
 
       const int16_t maxSkillValue = character->getMaxSkillValue(skillNumber);
-      const bool spellNotYetMaxable =
-        maxSkillValue < MAX_SKILL_LEARNEDNESS && spell->startLearnDo > 0;
+      // All skills can be honed, so just check if not at max
+      const bool spellNotYetMaxable = maxSkillValue < MAX_SKILL_LEARNEDNESS;
 
       vector<sstring> thisLine;
       thisLine.reserve(3);
