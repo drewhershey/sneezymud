@@ -1682,6 +1682,78 @@ void runMigrations() {
             fk.deleteRule.c_str()));
       }
     },
+    // Add missing FK constraints
+    [&]() {
+      vlogf(LOG_MISC, "Adding missing FK constraints");
+
+      // shopownedcentralbank.bank -> shop.shop_nr
+      sneezy.query(
+        "DELETE FROM shopownedcentralbank "
+        "WHERE bank NOT IN (SELECT shop_nr FROM shop)");
+      addForeignKey(sneezy, "shopownedcentralbank", "bank", "shop", "shop_nr",
+        "CASCADE");
+
+      // shopownedcentralbank.centralbank -> shop.shop_nr
+      sneezy.query(
+        "DELETE FROM shopownedcentralbank "
+        "WHERE centralbank IS NOT null "
+        "AND centralbank NOT IN (SELECT shop_nr FROM shop)");
+      addForeignKey(sneezy, "shopownedcentralbank", "centralbank", "shop",
+        "shop_nr", "CASCADE");
+
+      // shopownednpcloans.owner -> player.id (owner stores player_id per code)
+      modifyColumnType(sneezy, "shopownednpcloans", "owner",
+        "bigint(20) unsigned", false);
+      sneezy.query(
+        "UPDATE shopownednpcloans SET owner=null "
+        "WHERE owner IS NOT null AND owner NOT IN (SELECT id FROM player)");
+      addForeignKey(sneezy, "shopownednpcloans", "owner", "player", "id",
+        "SET null");
+
+      // shopownedauction.shop_nr already references shopowned.shop_nr (from
+      // migration 20), which cascades through shopowned -> shop. No direct FK
+      // to shop needed.
+
+      // shopownedauction.seller -> player.id (widen first)
+      modifyColumnType(sneezy, "shopownedauction", "seller",
+        "bigint(20) unsigned", false);
+      sneezy.query(
+        "UPDATE shopownedauction SET seller=null "
+        "WHERE seller IS NOT null AND seller NOT IN (SELECT id FROM player)");
+      addForeignKey(sneezy, "shopownedauction", "seller", "player", "id",
+        "SET null");
+
+      // shopownedauction.bidder -> player.id (widen first)
+      modifyColumnType(sneezy, "shopownedauction", "bidder",
+        "bigint(20) unsigned", false);
+      sneezy.query(
+        "UPDATE shopownedauction SET bidder=null "
+        "WHERE bidder IS NOT null AND bidder NOT IN (SELECT id FROM player)");
+      addForeignKey(sneezy, "shopownedauction", "bidder", "player", "id",
+        "SET null");
+
+      // shoplogjournal.post_ref -> shoplogaccountchart.post_ref
+      sneezy.query(
+        "DELETE FROM shoplogjournal "
+        "WHERE post_ref IS NOT null "
+        "AND post_ref NOT IN (SELECT post_ref FROM shoplogaccountchart)");
+      addForeignKey(sneezy, "shoplogjournal", "post_ref", "shoplogaccountchart",
+        "post_ref", "CASCADE");
+
+      // poll_option.poll_id -> poll.poll_id
+      sneezy.query(
+        "DELETE FROM poll_option "
+        "WHERE poll_id NOT IN (SELECT poll_id FROM poll)");
+      addForeignKey(sneezy, "poll_option", "poll_id", "poll", "poll_id",
+        "CASCADE");
+
+      // poll_vote.poll_id -> poll.poll_id
+      sneezy.query(
+        "DELETE FROM poll_vote "
+        "WHERE poll_id NOT IN (SELECT poll_id FROM poll)");
+      addForeignKey(sneezy, "poll_vote", "poll_id", "poll", "poll_id",
+        "CASCADE");
+    },
   };
 
   int oldVersion = getVersion(sneezy);
