@@ -1,8 +1,4 @@
--- MariaDB dump 10.19  Distrib 10.5.9-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: sneezy-db    Database: sneezy
--- ------------------------------------------------------
--- Server version	10.5.9-MariaDB-1:10.5.9+maria~focal
+/*M!999999\- enable the sandbox mode */ 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -13,64 +9,59 @@
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `ship_destinations`
---
-
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 DROP TABLE IF EXISTS `ship_destinations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ship_destinations` (
-  `vnum` int(11) DEFAULT NULL,
-  `name` varchar(32) DEFAULT NULL,
+  `vnum` int(11) NOT NULL,
+  `name` varchar(32) NOT NULL,
   `room` int(11) DEFAULT NULL,
-  KEY `ix1__ship_destinations` (`vnum`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`vnum`,`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `ship_destinations`
---
-
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
 LOCK TABLES `ship_destinations` WRITE;
 /*!40000 ALTER TABLE `ship_destinations` DISABLE KEYS */;
-INSERT INTO `ship_destinations` VALUES (19000,'Fishingshack',15150),
-(19000,'Mansion',26869),
-(19000,'Garbageisland',12623),
-(19000,'Citadel',10847),
-(19000,'Gnath',2400),
-(19000,'Whirlpool',12814),
-(19000,'WhirlpoolVortex',12781),
-(19000,'StrangeIsland',13142),
-(19000,'NorthEastMyrian',12545),
-(19000,'creed',2495),
-(19000,'poachers',15294),
-(19000,'WestGrimhaven',5417),
-(19000,'JungleBeach',12643),
-(19000,'SpiritBeach',14114),
-(19000,'Yola',12889),
-(19000,'siren',12874),
-(19000,'LazyGuy',13106),
-(19000,'Benjamin',12854),
-(19000,'Xanesla',6301),
-(19000,'sunkenship',13111),
-(19000,'lotsofcrap',12607),
-(19000,'smalltropicalisland',12802),
+INSERT INTO `ship_destinations` VALUES
+(15375,'Brazzed',2492),
 (15375,'cardac',2471),
+(15375,'DD',13899),
+(15375,'fishmaster',15150),
+(15375,'fog',13280),
 (15375,'garbage',12623),
 (15375,'kalysia',14117),
-(15375,'fishmaster',15150),
 (15375,'Neghya',27274),
-(15375,'Brazzed',2492),
-(15375,'DD',13899),
-(15375,'Waterfall',15286),
 (15375,'Ranger',5408),
+(15375,'Waterfall',15286),
 (15375,'Xanesla',6301),
-(15375,'fog',13280);
+(19000,'Benjamin',12854),
+(19000,'Citadel',10847),
+(19000,'creed',2495),
+(19000,'Fishingshack',15150),
+(19000,'Garbageisland',12623),
+(19000,'Gnath',2400),
+(19000,'JungleBeach',12643),
+(19000,'LazyGuy',13106),
+(19000,'lotsofcrap',12607),
+(19000,'Mansion',26869),
+(19000,'NorthEastMyrian',12545),
+(19000,'poachers',15294),
+(19000,'siren',12874),
+(19000,'smalltropicalisland',12802),
+(19000,'SpiritBeach',14114),
+(19000,'StrangeIsland',13142),
+(19000,'sunkenship',13111),
+(19000,'WestGrimhaven',5417),
+(19000,'Whirlpool',12814),
+(19000,'WhirlpoolVortex',12781),
+(19000,'Xanesla',6301),
+(19000,'Yola',12889);
 /*!40000 ALTER TABLE `ship_destinations` ENABLE KEYS */;
 UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -79,6 +70,5 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-12-11  1:17:50

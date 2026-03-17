@@ -1,50 +1,44 @@
--- MySQL dump 10.10
---
--- Host: db.sneezymud.com    Database: sneezy
--- ------------------------------------------------------
--- Server version	5.0.24a-standard
+/*M!999999\- enable the sandbox mode */ 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `shop`
---
-
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 DROP TABLE IF EXISTS `shop`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `shop` (
-  `shop_nr` int(11) NOT NULL default '0',
-  `profit_buy` double NOT NULL default '0',
-  `profit_sell` double NOT NULL default '0',
-  `no_such_item1` varchar(127) NOT NULL default '',
-  `no_such_item2` varchar(127) NOT NULL default '',
-  `do_not_buy` varchar(127) NOT NULL default '',
-  `missing_cash1` varchar(127) NOT NULL default '',
-  `missing_cash2` varchar(127) NOT NULL default '',
-  `message_buy` varchar(127) NOT NULL default '',
-  `message_sell` varchar(127) NOT NULL default '',
-  `temper1` int(11) NOT NULL default '0',
-  `temper2` int(11) NOT NULL default '0',
-  `keeper` int(11) NOT NULL default '0',
-  `flags` int(11) NOT NULL default '0',
-  `in_room` int(11) NOT NULL default '0',
-  `open1` int(11) NOT NULL default '0',
-  `close1` int(11) NOT NULL default '0',
-  `open2` int(11) NOT NULL default '0',
-  `close2` int(11) NOT NULL default '0',
-  `expense_ratio` double default NULL,
-  PRIMARY KEY  (`shop_nr`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
+  `shop_nr` int(11) NOT NULL DEFAULT 0,
+  `profit_buy` double NOT NULL DEFAULT 0,
+  `profit_sell` double NOT NULL DEFAULT 0,
+  `no_such_item1` varchar(127) NOT NULL DEFAULT '',
+  `no_such_item2` varchar(127) NOT NULL DEFAULT '',
+  `do_not_buy` varchar(127) NOT NULL DEFAULT '',
+  `missing_cash1` varchar(127) NOT NULL DEFAULT '',
+  `missing_cash2` varchar(127) NOT NULL DEFAULT '',
+  `message_buy` varchar(127) NOT NULL DEFAULT '',
+  `message_sell` varchar(127) NOT NULL DEFAULT '',
+  `temper1` int(11) NOT NULL DEFAULT 0,
+  `temper2` int(11) NOT NULL DEFAULT 0,
+  `keeper` int(11) NOT NULL DEFAULT 0,
+  `flags` int(11) NOT NULL DEFAULT 0,
+  `in_room` int(11) NOT NULL DEFAULT 0,
+  `open1` int(11) NOT NULL DEFAULT 0,
+  `close1` int(11) NOT NULL DEFAULT 0,
+  `open2` int(11) NOT NULL DEFAULT 0,
+  `close2` int(11) NOT NULL DEFAULT 0,
+  `expense_ratio` double DEFAULT NULL,
+  PRIMARY KEY (`shop_nr`),
+  KEY `idx_shop_keeper` (`keeper`),
+  KEY `idx_shop_in_room` (`in_room`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -53,4 +47,5 @@ CREATE TABLE `shop` (
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
+

@@ -1,8 +1,4 @@
--- MariaDB dump 10.19  Distrib 10.5.9-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: sneezy-db    Database: sneezy
--- ------------------------------------------------------
--- Server version	10.5.9-MariaDB-1:10.5.9+maria~focal
+/*M!999999\- enable the sandbox mode */ 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -13,15 +9,10 @@
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `shop`
---
-
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 DROP TABLE IF EXISTS `shop`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `shop` (
   `shop_nr` int(11) NOT NULL DEFAULT 0,
   `profit_buy` double NOT NULL DEFAULT 0,
@@ -43,17 +34,17 @@ CREATE TABLE `shop` (
   `open2` int(11) NOT NULL DEFAULT 0,
   `close2` int(11) NOT NULL DEFAULT 0,
   `expense_ratio` double DEFAULT NULL,
-  PRIMARY KEY (`shop_nr`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`shop_nr`),
+  KEY `idx_shop_keeper` (`keeper`),
+  KEY `idx_shop_in_room` (`in_room`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `shop`
---
-
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
 LOCK TABLES `shop` WRITE;
 /*!40000 ALTER TABLE `shop` DISABLE KEYS */;
-INSERT INTO `shop` VALUES (0,1.1,0.9,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,150,0,559,0,96,0,0,0),
+INSERT INTO `shop` VALUES
+(0,1.1,0.9,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,150,0,559,0,96,0,0,0),
 (1,1.1,0.9,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','I only buy light!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,151,0,550,0,96,0,0,0),
 (2,1.1,0.9,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Armor is all I care about!','I can\'t afford that!','If you can\'t afford it, don\'t ask for it!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,152,0,555,0,96,0,0,0),
 (3,1,0.5,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,153,0,560,0,96,0,0,0),
@@ -68,7 +59,7 @@ INSERT INTO `shop` VALUES (0,1.1,0.9,'I don\'t have that right now.  Try \"list\
 (12,1.1,1,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,162,0,554,0,96,0,0,0),
 (13,0,0,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,19011,0,19011,0,96,0,0,0),
 (14,0.05,0,'','','','','','','',0,0,31766,0,31789,0,0,0,0,0),
-(15,1,0.5,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,165,0,558,0,96,0,0,0),
+(15,1,0.5,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Only a fool would buy something so worthless!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,165,0,558,0,96,0,0,0),
 (16,1,0.4,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,8755,0,8755,0,96,0,0,0),
 (17,1,0.8,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,4303,0,4368,0,96,0,0,0),
 (18,1,0.4,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,1346,0,1346,0,96,0,0,0),
@@ -319,6 +310,8 @@ INSERT INTO `shop` VALUES (0,1.1,0.9,'I don\'t have that right now.  Try \"list\
 (263,1.5,0.1,'I don\'t have that right now.  Try \"list\".','I\'ve never heard of that!','Go sell it to someone who cares!','I can\'t afford that!','I don\'t think you have that kind of money!','That\'ll be %d talens.  Thank you!','Here is your %d talens.  Thank you!',2,1,46550,0,46594,0,96,0,0,1);
 /*!40000 ALTER TABLE `shop` ENABLE KEYS */;
 UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -327,6 +320,5 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-12-11  1:17:50

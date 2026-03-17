@@ -1,8 +1,4 @@
--- MariaDB dump 10.19  Distrib 10.5.9-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: sneezy-db    Database: sneezy
--- ------------------------------------------------------
--- Server version	10.5.9-MariaDB-1:10.5.9+maria~focal
+/*M!999999\- enable the sandbox mode */ 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -13,52 +9,35 @@
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `corporation`
---
-
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 DROP TABLE IF EXISTS `corporation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `corporation` (
   `corp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(80) NOT NULL,
   `bank` int(11) DEFAULT NULL,
-  UNIQUE KEY `corp_id` (`corp_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`corp_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `corporation`
---
-
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
 LOCK TABLES `corporation` WRITE;
 /*!40000 ALTER TABLE `corporation` DISABLE KEYS */;
-INSERT INTO `corporation` VALUES (1,'Small Business Alliance',4),
-(2,'Regents of the University of KYA',4),
-(3,'Fitz Inc.',4),
-(4,'The Frobozz Magic Company',4),
-(6,'Spiff Inc.',4),
-(7,'The Four Spots Pirate Gang',142),
-(8,'Adoresqua Inc.',4),
+INSERT INTO `corporation` VALUES
+(1,'Small Business Alliance',4),
 (10,'Metal Workers Union',4),
-(11,'Buff and Chub Inc.',4),
-(12,'Wicked Wonka Inc.',4),
-(13,'GoldLama Co.',4),
 (16,'Food Workers Union',4),
-(17,'Players Alliance Against Crappy Shops',4),
 (21,'Royal Kingdom of Grimhaven',4),
 (23,'The Brotherhood of Galek',140),
-(24,'The Cult of Logrus',141),
 (25,'The Order of the Serpents',142),
 (27,'Royal Kingdom of Amber',142),
 (28,'Realm of the Cult of Logrus',141),
-(29,'Honorable Kingdom of Brightmoon',140),
-(30,'Sage Enterprises',4);
+(29,'Honorable Kingdom of Brightmoon',140);
 /*!40000 ALTER TABLE `corporation` ENABLE KEYS */;
 UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -67,6 +46,5 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-12-11  1:17:47

@@ -1,8 +1,4 @@
--- MariaDB dump 10.19  Distrib 10.5.9-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: sneezy-db    Database: sneezy
--- ------------------------------------------------------
--- Server version	10.5.9-MariaDB-1:10.5.9+maria~focal
+/*M!999999\- enable the sandbox mode */ 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -13,30 +9,24 @@
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `mob_extra`
---
-
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 DROP TABLE IF EXISTS `mob_extra`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mob_extra` (
   `vnum` int(11) NOT NULL DEFAULT 0,
   `keyword` char(32) NOT NULL DEFAULT '',
   `description` char(255) DEFAULT NULL,
-  PRIMARY KEY (`vnum`,`keyword`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`vnum`,`keyword`),
+  CONSTRAINT `fk_mob_extra_vnum` FOREIGN KEY (`vnum`) REFERENCES `mob` (`vnum`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `mob_extra`
---
-
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
 LOCK TABLES `mob_extra` WRITE;
 /*!40000 ALTER TABLE `mob_extra` DISABLE KEYS */;
-INSERT INTO `mob_extra` VALUES (10,'bamfin','This is a <r>test<z> of the <k><n> broad<z><g>cast<z> system.'),
+INSERT INTO `mob_extra` VALUES
+(10,'bamfin','This is a <r>test<z> of the <k><n> broad<z><g>cast<z> system.'),
 (4547,'repop','A young cannibal appears suddenly in a puff of smoke.'),
 (5018,'movein','A <W>white doe<z> steps tentatively into view.'),
 (5623,'movein','<c>Egdinia says, <z>\"What are you doing in here!!!\"'),
@@ -76,8 +66,6 @@ INSERT INTO `mob_extra` VALUES (10,'bamfin','This is a <r>test<z> of the <k><n> 
 (28919,'bamfin','A trolloc walks in from a day of killing to relax.'),
 (28920,'bamfin','A trolloc walks in from a day of killing relax.'),
 (28921,'bamfin','A trolloc walks in from a night of killing to relax.'),
-(30707,'bamfout','A little girl realizes it\'s her bedtime, and rushes home.'),
-(30708,'bamfout','A wild chicken scuttles off, looking for a place to roost.'),
 (30994,'repop','A thin, <w>pale-faced<z> gnome with <r>crimson lips<z> slowly rises from <o>a small sarcophagus<1> and howls, \"What fool dares disturb the sleep of the dead?!\"'),
 (31310,'deathcry','Baron Samedi\'s soul leaps from his body and dives into the ground.'),
 (33300,'bamfin','A fallow deer prances out of the forest.'),
@@ -85,6 +73,8 @@ INSERT INTO `mob_extra` VALUES (10,'bamfin','This is a <r>test<z> of the <k><n> 
 (37138,'repop','$n appears and licks its stinking teeth.');
 /*!40000 ALTER TABLE `mob_extra` ENABLE KEYS */;
 UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -93,6 +83,5 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-12-11  1:17:48
